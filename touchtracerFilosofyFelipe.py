@@ -76,8 +76,8 @@ class Touchtracer(FloatLayout):
 		return
 
 	def send_points(self, data):
-		UDP_IP = "10.100.9.253"
-		UDP_PORT = 5005
+		UDP_IP = "127.0.0.1"
+		UDP_PORT = 5006
 
 		sock = socket.socket(socket.AF_INET, # Internet
 				socket.SOCK_DGRAM) # UDP
@@ -85,7 +85,7 @@ class Touchtracer(FloatLayout):
 
 	def receive_points(self):
 		UDP_IP = "127.0.0.1"
-		UDP_PORT = 5006
+		UDP_PORT = 5005
 
 		sock = socket.socket(socket.AF_INET, # Internet
 							socket.SOCK_DGRAM) # UDP
@@ -96,15 +96,17 @@ class TouchtracerApp(App):
     title = 'Touchtracer'
     icon = 'icon.png'
 
+    toucht = Touchtracer()
+
     def build(self):
-        return Touchtracer()
+        return self.toucht
 
     '''
     Si vamos a tener el servidor de escucha corriendo
     todo el momento, podemos ejecutar on_start
     '''
     def on_start(self):
-    	return
+    	self.toucht.receive_points()
 
    	'''
    	Paramos el servidor de escucha, si lo tenemos
