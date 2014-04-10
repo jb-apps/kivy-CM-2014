@@ -10,6 +10,7 @@ from kivy.graphics import Color, Rectangle, Point, GraphicException, Ellipse, Li
 from random import random
 from kivy.uix.widget import Widget
 from math import sqrt
+import asyncore
 import socket
 
 Builder.load_string("""
@@ -76,8 +77,8 @@ class Touchtracer(FloatLayout):
 		return
 
 	def send_points(self, data):
-		UDP_IP = "127.0.0.1"
-		UDP_PORT = 5006
+		UDP_IP = "10.100.9.253"
+		UDP_PORT = 5005
 
 		sock = socket.socket(socket.AF_INET, # Internet
 				socket.SOCK_DGRAM) # UDP
@@ -85,35 +86,33 @@ class Touchtracer(FloatLayout):
 
 	def receive_points(self):
 		UDP_IP = "127.0.0.1"
-		UDP_PORT = 5005
+		UDP_PORT = 5006
 
 		sock = socket.socket(socket.AF_INET, # Internet
 							socket.SOCK_DGRAM) # UDP
 		sock.bind((UDP_IP, UDP_PORT))
-		data, addr = sock.recvfrom(1024)
+		data, addr = sock.recvfrom(10240)
 
 class TouchtracerApp(App):
     title = 'Touchtracer'
     icon = 'icon.png'
 
-    toucht = Touchtracer()
-
     def build(self):
-        return self.toucht
+        return Touchtracer()
 
     '''
     Si vamos a tener el servidor de escucha corriendo
     todo el momento, podemos ejecutar on_start
     '''
     def on_start(self):
-    	self.toucht.receive_points()
+        return
 
    	'''
    	Paramos el servidor de escucha, si lo tenemos
    	corriendo
    	'''
     def on_pause(self):
-        return True
+    	return True
 
     def on_resume(self):
     	# No se garantiza que se ejecute despues de
@@ -123,5 +122,28 @@ class TouchtracerApp(App):
     def on_stop(self):
     	return
 
-if __name__ == '__main__':
-    TouchtracerApp().run()
+class AsyncoreServerUDP(asyncore.dispatcher):
+	def __init__(self):
+		asyncore.dispatcher.__init__(self)
+
+		# Bind to port 5005 on all interfaces
+		self.create_socket(socket.AF_INET, socket.SOCK_DGRAM)
+		self.bind(('', 5006))
+
+	# Even though UDP is connectionless this is called when it binds to a port
+	def handle_connect(self):
+		print "Server Started...  estoy escuchando"
+		if __name__ == '__main__':
+			TouchtracerApp().run()
+
+	# This is called everytime there is something to read
+	def handle_read(self):
+		data, addr = self.recvfrom(10240)
+		print str(addr)+" >> "+data
+
+	# This is called all the time and causes errors if you leave it out.
+	def handle_write(self):
+		pass
+
+AsyncoreServerUDP()
+asyncore.loop()
