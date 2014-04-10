@@ -56,8 +56,6 @@ def calculate_points(x1, y1, x2, y2, steps=5):
         o.extend([lastx, lasty])
     return o
 
-#UDP_toSend = []
-
 class Touchtracer(FloatLayout):
 
 	def on_touch_down(self, touch):
@@ -92,6 +90,9 @@ class Touchtracer(FloatLayout):
 							socket.SOCK_DGRAM) # UDP
 		sock.bind((UDP_IP, UDP_PORT))
 		data, addr = sock.recvfrom(10240)
+
+	def draw_points(self, data):
+		pass
 
 class TouchtracerApp(App):
     title = 'Touchtracer'
@@ -139,6 +140,7 @@ class AsyncoreServerUDP(asyncore.dispatcher):
 	# This is called everytime there is something to read
 	def handle_read(self):
 		data, addr = self.recvfrom(10240)
+		Touchtracer.draw_points(data)
 		print str(addr)+" >> "+data
 
 	# This is called all the time and causes errors if you leave it out.
