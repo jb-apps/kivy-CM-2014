@@ -1,5 +1,8 @@
 import kivy
-kivy.require('1.0.6')
+kivy.require('1.1.2')
+from kivy.config import Config
+Config.set('graphics', 'width', '320')
+Config.set('graphics', 'height', '480')
 
 from kivy.app import App
 from kivy.lang import Builder
@@ -89,7 +92,7 @@ class Touchtracer(Widget):
 	# Recepcion de puntos del servidor
 	def receive_points(self):
 		print "console >> Running server..."
-		self.sock_server.bind(('127.0.0.1', self.server_port))
+		self.sock_server.bind(('', self.server_port))
 		while 1:
 			try:
 				data, addr = self.sock_server.recvfrom(10240)
