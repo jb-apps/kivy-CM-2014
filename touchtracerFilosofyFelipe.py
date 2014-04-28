@@ -1,151 +1,127 @@
-#!/usr/bin/kivy
 import kivy
 kivy.require('1.0.6')
 
 from kivy.app import App
 from kivy.lang import Builder
 from kivy.uix.floatlayout import FloatLayout
+from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
 from kivy.graphics import Color, Rectangle, Point, GraphicException, Ellipse, Line
 from random import random
 from kivy.uix.widget import Widget
 from math import sqrt
-import asyncore
-import socket
+from kivy.properties import ObjectProperty
+import threading, socket, time, re
 
 Builder.load_string("""
 <Touchtracer>:
-    canvas:
-        Color:
-            rgb: 1, 1, 1
-        Rectangle:
-            source: 'data/images/background.jpg'
-            size: self.size
+	canvas:
+		Color:
+			rgb: 1, 1, 1
+		Rectangle:
+			source: 'data/images/background.jpg'
+			size: self.size
 
-    BoxLayout:
-        padding: '10dp'
-        spacing: '10dp'
-        size_hint: 1, None
-        pos_hint: {'top': 1}
-        height: '44dp'
-        Image:
-            size_hint: None, None
-            size: '24dp', '24dp'
-            source: 'data/logo/kivy-icon-64.png'
+	BoxLayout:
+		padding: '10dp'
+		spacing: '10dp'
+		size_hint: 1, None
+		pos_hint: {'top': 1}
+		height: '44dp'
+		Image:
+			size_hint: None, None
+			size: '24dp', '24dp'
+			source: 'data/logo/kivy-icon-64.png'
 			mipmap: True
-        Label:
-            height: '24dp'
-            text_size: self.width, None
-            color: (1, 1, 1, .8)
-            text: 'Kivy - Touchtracer'
-            valign: 'middle'
+		Label:
+			height: '24dp'
+			text_size: self.width, None
+			color: (1, 1, 1, .8)
+			text: 'Kivy - Touchtracer'
+			valign: 'middle'
 """)
 
-def calculate_points(x1, y1, x2, y2, steps=5):
-    dx = x2 - x1
-    dy = y2 - y1
-    dist = sqrt(dx * dx + dy * dy)
-    if dist < steps:
-        return None
-    o = []
-    m = dist / steps
-    for i in range(1, int(m)):
-        mi = i / m
-        lastx = x1 + dx * mi
-        lasty = y1 + dy * mi
-        o.extend([lastx, lasty])
-    return o
 
-class Touchtracer(FloatLayout):
+
+class Touchtracer(Widget):
+
+	sock_server = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
+	server_port = 5006
+	
+	def __init__(self, **kwargs):
+		super(Touchtracer, self).__init__(**kwargs)
+		# Ejecutamos el servidor
+		thread = threading.Thread(target=self.receive_points)
+		thread.start()
+
 
 	def on_touch_down(self, touch):
-		color = (random(), random(), random())
 		with self.canvas:
-			Color(*color)
-			touch.ud['line'] = Line(points=(touch.x, touch.y))
+			touch.ud['line'] = Line(points=[touch.x, touch.y])
 
 	def on_touch_move(self, touch):
 		touch.ud['line'].points += [touch.x, touch.y]
-		# Anadimos los puntos al vector
-		#UDP_toSend.append(touch.ud['line'].points)
-		self.send_points(str(touch.ud['line'].points))
 
 	def on_touch_up(self, touch):
-		# Enviamos los puntos
-		return
+		self.send_points('127.0.0.1', 5005, str(touch.ud['line'].points))
 
-	def send_points(self, data):
-		UDP_IP = "10.100.9.253"
-		UDP_PORT = 5005
+	'''
+		Metodos auxiliares de la aplicacion
+	'''
+	# Parar el servidor de escucha
+	def stop_server(self):
+		self.sock_server.close()
+		# Es necesario despues de cerrar el socket intentar realizar un envio
+		self.send_points('127.0.0.1', self.server_port, '')
 
+	# Arrancar servidor
+	def run_server(self):
+		self.sock_server = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
+		thread = threading.Thread(target=self.receive_points)
+		thread.start()
+	
+	# Envio de puntos al servidor
+	def send_points(self, ip, port, data):
 		sock = socket.socket(socket.AF_INET, # Internet
 				socket.SOCK_DGRAM) # UDP
-		sock.sendto(data, (UDP_IP, UDP_PORT))
+		sock.sendto(data, (ip, port))
 
+	# Recepcion de puntos del servidor
 	def receive_points(self):
-		UDP_IP = "127.0.0.1"
-		UDP_PORT = 5006
-
-		sock = socket.socket(socket.AF_INET, # Internet
-							socket.SOCK_DGRAM) # UDP
-		sock.bind((UDP_IP, UDP_PORT))
-		data, addr = sock.recvfrom(10240)
+		print "console >> Running server..."
+		self.sock_server.bind(('127.0.0.1', self.server_port))
+		while 1:
+			try:
+				data, addr = self.sock_server.recvfrom(10240)
+				if len(data) != 0:
+					print "console >> Data received from",addr
+					self.draw_points(data)
+				else:
+					print "console >> Stopping server"
+			except:
+				break
 
 	def draw_points(self, data):
-		pass
+		p = re.compile('\d+\.\d*')
+		d = p.findall(data)
+
+		# Aseguramos que vamos a recorrer el array esperado y no otro dato
+		#if len(d >= 2):
+		d_float = [float(item) for item in d]
+		print "console >> Drawing points"
+		with self.canvas:
+			Line(points=d_float)
+	
 
 class TouchtracerApp(App):
-    title = 'Touchtracer'
-    icon = 'icon.png'
 
-    def build(self):
-        return Touchtracer()
+	ttracer = Touchtracer()
 
-    '''
-    Si vamos a tener el servidor de escucha corriendo
-    todo el momento, podemos ejecutar on_start
-    '''
-    def on_start(self):
-        return
+	def build(self):
+		return self.ttracer
 
-   	'''
-   	Paramos el servidor de escucha, si lo tenemos
-   	corriendo
-   	'''
-    def on_pause(self):
-    	return True
+	def on_stop(self):
+		self.ttracer.stop_server()
 
-    def on_resume(self):
-    	# No se garantiza que se ejecute despues de
-    	# on_pause
-    	return
-
-    def on_stop(self):
-    	return
-
-class AsyncoreServerUDP(asyncore.dispatcher):
-	def __init__(self):
-		asyncore.dispatcher.__init__(self)
-
-		# Bind to port 5005 on all interfaces
-		self.create_socket(socket.AF_INET, socket.SOCK_DGRAM)
-		self.bind(('', 5006))
-
-	# Even though UDP is connectionless this is called when it binds to a port
-	def handle_connect(self):
-		print "Server Started...  estoy escuchando"
-		if __name__ == '__main__':
-			TouchtracerApp().run()
-
-	# This is called everytime there is something to read
-	def handle_read(self):
-		data, addr = self.recvfrom(10240)
-		Touchtracer.draw_points(data)
-		print str(addr)+" >> "+data
-
-	# This is called all the time and causes errors if you leave it out.
-	def handle_write(self):
-		pass
-
-AsyncoreServerUDP()
-asyncore.loop()
+if __name__ == '__main__':
+	TouchtracerApp().run()
