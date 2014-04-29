@@ -10,6 +10,7 @@ from kivy.graphics import Color, Rectangle, Point, GraphicException, Ellipse, Li
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
+from kivy.uix.textinput import TextInput
 from kivy.uix.widget import Widget
 from kivy.properties import ObjectProperty, NumericProperty
 from kivy.clock import Clock
@@ -20,8 +21,26 @@ import threading, socket, time, re, time
 
 Builder.load_string("""
 <LoginScreen>:
-	Label:
-		text: 'LoginScreen'
+	FloatLayout:
+		Label:
+			font_size: root.height*0.05
+			size_hint: .4,.1
+			pos_hint: {'x':.3, 'y':.7}
+			text: 'Username'
+		
+		TextInput:
+			font_size: root.height*0.05
+			text:''
+			size_hint:.6,.1
+			pos_hint: {'x':.2, 'y':.6}
+			multiline: False
+
+		Button:
+	        font_size: root.height*0.05
+	        pos_hint: {'x':.3, 'y':.48}
+	        size_hint: .4,.1
+	        text: "Aceptar"
+			#on_release: root.btn_click()
 
 <PlayViewerScreen>:
 	Label:
@@ -78,7 +97,8 @@ Builder.load_string("""
 """)
 
 class LoginScreen(Screen):
-	pass
+	def __init__(self, **kwargs):
+		super(LoginScreen, self).__init__(**kwargs)
 
 class PlayViewerScreen(Screen):
 	pass
@@ -159,10 +179,9 @@ class PlayDrawerScreen(Screen):
 
 
 sm = ScreenManager()
-sm.add_widget(PlayDrawerScreen(name='playDrawer'))
 sm.add_widget(LoginScreen(name='login'))
+sm.add_widget(PlayDrawerScreen(name='playDrawer'))
 sm.add_widget(PlayViewerScreen(name='playViewer'))
-
 
 class TouchtracerApp(App):
 
