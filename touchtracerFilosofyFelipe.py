@@ -166,16 +166,11 @@ sm.add_widget(PlayViewerScreen(name='playViewer'))
 
 class TouchtracerApp(App):
 
-	#ttracer = PlayDrawerScreen()
-
 	def build(self):
-		#Clock.schedule_interval(self.ttracer.update_timer, 1)
 		Clock.schedule_interval(sm.get_screen('playDrawer').update_timer, 1)
-		#return self.ttracer
 		return sm
 
 	def on_stop(self):
-		#self.ttracer.stop_server()
 		sm.get_screen('playDrawer').stop_server()
 
 if __name__ == '__main__':
