@@ -6,15 +6,16 @@ Config.set('graphics', 'height', '480')
 
 from kivy.app import App
 from kivy.lang import Builder
+from kivy.graphics import Color, Rectangle, Point, GraphicException, Ellipse, Line
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
-from kivy.graphics import Color, Rectangle, Point, GraphicException, Ellipse, Line
-from random import random
 from kivy.uix.widget import Widget
+from kivy.properties import ObjectProperty, NumericProperty
+from kivy.clock import Clock
 from math import sqrt
-from kivy.properties import ObjectProperty
-import threading, socket, time, re
+from random import random
+import threading, socket, time, re, time
 
 Builder.load_string("""
 <Touchtracer>:
@@ -42,6 +43,29 @@ Builder.load_string("""
 			color: (1, 1, 1, .8)
 			text: 'Kivy - Touchtracer'
 			valign: 'middle'
+
+	FloatLayout:
+		canvas:
+			Color:
+				rgb: 1, 1, 1
+			Ellipse:
+				size: 60, 60
+				pos: 260, 420
+			
+			Color:
+				rgb: 0, 0, 1
+			Ellipse:
+				size: 60, 60
+				angle_start: 0
+				angle_end: root.uxSeconds * 6
+				pos: 260, 420
+
+			Color:
+				rgb: 0, 0, 0
+			Ellipse:
+				size: 40, 40
+				pos: 270, 430
+
 """)
 
 
@@ -50,10 +74,11 @@ class Touchtracer(Widget):
 
 	sock_server = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
 	server_port = 5006
+	uxSeconds = NumericProperty(0)
 	
 	def __init__(self, **kwargs):
 		super(Touchtracer, self).__init__(**kwargs)
-		# Ejecutamos el servidor
+		# Creamos el hilo del servidor
 		thread = threading.Thread(target=self.receive_points)
 		thread.start()
 
@@ -102,6 +127,7 @@ class Touchtracer(Widget):
 				else:
 					print "console >> Stopping server"
 			except:
+				print "console >> ERROR receiving data"
 				break
 
 	def draw_points(self, data):
@@ -115,12 +141,15 @@ class Touchtracer(Widget):
 		with self.canvas:
 			Line(points=d_float)
 	
+	def update_timer(self, second):
+		self.uxSeconds = int(time.strftime('%S', time.localtime()))
 
 class TouchtracerApp(App):
 
 	ttracer = Touchtracer()
 
 	def build(self):
+		Clock.schedule_interval(self.ttracer.update_timer, 1)
 		return self.ttracer
 
 	def on_stop(self):
