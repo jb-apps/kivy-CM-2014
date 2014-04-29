@@ -15,10 +15,19 @@ from kivy.properties import ObjectProperty, NumericProperty
 from kivy.clock import Clock
 from math import sqrt
 from random import random
+from kivy.uix.screenmanager import ScreenManager, Screen
 import threading, socket, time, re, time
 
 Builder.load_string("""
-<Touchtracer>:
+<LoginScreen>:
+	Label:
+		text: 'LoginScreen'
+
+<PlayViewerScreen>:
+	Label:
+		text: 'PlayViewerScreen'
+
+<PlayDrawerScreen>:
 	canvas:
 		Color:
 			rgb: 1, 1, 1
@@ -41,7 +50,7 @@ Builder.load_string("""
 			height: '24dp'
 			text_size: self.width, None
 			color: (1, 1, 1, .8)
-			text: 'Kivy - Touchtracer'
+			text: 'Kivy - PlayDrawerScreen'
 			valign: 'middle'
 
 	FloatLayout:
@@ -68,16 +77,20 @@ Builder.load_string("""
 
 """)
 
+class LoginScreen(Screen):
+	pass
 
+class PlayViewerScreen(Screen):
+	pass
 
-class Touchtracer(Widget):
+class PlayDrawerScreen(Screen):
 
 	sock_server = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
 	server_port = 5006
 	uxSeconds = NumericProperty(0)
 	
 	def __init__(self, **kwargs):
-		super(Touchtracer, self).__init__(**kwargs)
+		super(PlayDrawerScreen, self).__init__(**kwargs)
 		# Creamos el hilo del servidor
 		thread = threading.Thread(target=self.receive_points)
 		thread.start()
@@ -144,16 +157,26 @@ class Touchtracer(Widget):
 	def update_timer(self, second):
 		self.uxSeconds = int(time.strftime('%S', time.localtime()))
 
+
+sm = ScreenManager()
+sm.add_widget(PlayDrawerScreen(name='playDrawer'))
+sm.add_widget(LoginScreen(name='login'))
+sm.add_widget(PlayViewerScreen(name='playViewer'))
+
+
 class TouchtracerApp(App):
 
-	ttracer = Touchtracer()
+	#ttracer = PlayDrawerScreen()
 
 	def build(self):
-		Clock.schedule_interval(self.ttracer.update_timer, 1)
-		return self.ttracer
+		#Clock.schedule_interval(self.ttracer.update_timer, 1)
+		Clock.schedule_interval(sm.get_screen('playDrawer').update_timer, 1)
+		#return self.ttracer
+		return sm
 
 	def on_stop(self):
-		self.ttracer.stop_server()
+		#self.ttracer.stop_server()
+		sm.get_screen('playDrawer').stop_server()
 
 if __name__ == '__main__':
 	TouchtracerApp().run()
