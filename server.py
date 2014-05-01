@@ -1,4 +1,4 @@
-import socket
+import socket,sys
 import json
 import MySQLdb
 
@@ -40,34 +40,85 @@ def getIdUser(username):
 	else:
 		cursor.close()
 		cursor = DB.cursor()
-		cursor.execute("INSERT INTO user VALUES ('', %s, 0, 0)", (username,))
+		cursor.execute("INSERT INTO user VALUES ('', %s, 0, 0, 0)", (username,))
 		cursor.close()
 		DB.commit()
 		id_user = getIdUser(username)
 		return id_user
-		
+
+def getPunctuation(id_user):
+	cursor = DB.cursor()
+	cursor.execute("SELECT point FROM punctuation WHERE FK_user = %s", (id_user,))		
+	punctuation = cursor.fetchall()
+	ret = 0
+	for point in punctuation:
+		ret += point
+	return ret
+
+def getOnlineUser(id_user):
+	cursor = DB.cursor()
+	cursor.execute("SELECT id_user, username FROM user WHERE user.online = 1")		
+	users = cursor.fetchall()
+	DB.commit()
+	dic = {}
+	if users:
+		for row in users:
+			if row[0] != int(id_user):
+				dic[row[1]] = getPunctuation(row[0]) 
+		return dic
+	else:
+		return dic
+
 def process_action (action, data):
 
 	if action == "INIT_SESSION":
 		id_user = getIdUser(data["username"])
 		print "User INIT_SESSION with id:", id_user
-		conn.send(json.dumps(data)) # echo
+		dic = {}
+		if id_user:
+			dic["id_user"] = id_user
+			response = make_response("OK",dic)
+			conn.send(response) # echo
+		else:
+			response = make_response("ERROR",dic)
+			conn.send(response)
+
+	elif action == "GET_ONLINE_USER":
+		print "User with id_user = ", data["id_user"], "GET_ONLINE_USER"
+		users = getOnlineUser(data["id_user"])
+		if users:
+			response = make_response("OK",users)
+			conn.send(response) # echo
+		else:
+			response = make_response("ERROR",{})
+			conn.send(response) # echo
 
 	elif action == "":
 		pass
 
+
 while 1:
 	data = conn.recv(BUFFER_SIZE)
 	if data:
-		message = json.loads(data)
 
-		if message["action"] == "close":
-			print "conexion close:", message["action"]
+		try:
+			message = json.loads(data)
+
+			if message["action"] == "close":
+				print "conexion close:", message["action"]
+				conn.send(data) # echo 
+				conn.close()
+				conn, addr = s.accept()
+			else:
+				process_action(message["action"], message["data"])
+
+		except Exception, e:
+			dic = {}
+			dic["message"]=str(e)
+			data = make_response("ERROR", dic)
 			conn.send(data) # echo 
 			conn.close()
-			conn, addr = s.accept()
-		else:
-			process_action(message["action"], message["data"])		
+			conn, addr = s.accept()			
 				
 
 conn.close()
