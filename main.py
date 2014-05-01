@@ -10,7 +10,10 @@ from kivy.graphics import Color, Rectangle, Point, GraphicException, Ellipse, Li
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
+from kivy.uix.textinput import TextInput
 from kivy.uix.widget import Widget
+from kivy.uix.popup import Popup
+from kivy.uix.button import Button
 from kivy.properties import ObjectProperty, NumericProperty
 from kivy.clock import Clock
 from math import sqrt
@@ -20,8 +23,27 @@ import threading, socket, time, re, time
 
 Builder.load_string("""
 <LoginScreen>:
-	Label:
-		text: 'LoginScreen'
+	FloatLayout:
+		Label:
+			font_size: root.height*0.05
+			size_hint: .4,.1
+			pos_hint: {'x':.3, 'y':.7}
+			text: 'Username'
+		
+		TextInput:
+			id: txt_userLogin
+			font_size: root.height*0.05
+			text:''
+			size_hint:.6,.1
+			pos_hint: {'x':.2, 'y':.6}
+			multiline: False
+
+		Button:
+	        font_size: root.height*0.05
+	        pos_hint: {'x':.3, 'y':.48}
+	        size_hint: .4,.1
+	        text: "Aceptar"
+			on_press: root.user_login()
 
 <PlayViewerScreen>:
 	Label:
@@ -77,8 +99,37 @@ Builder.load_string("""
 
 """)
 
+sm = ScreenManager()
+
 class LoginScreen(Screen):
-	pass
+	def __init__(self, **kwargs):
+		super(LoginScreen, self).__init__(**kwargs)
+
+	'''
+		Metodos auxiliares de la aplicacion
+	'''
+	# Gestiona el nombre de usuario al loguearse
+	def user_login(self):
+		if len(self.ids.txt_userLogin.text) != 0:
+			self.manager.current = 'playDrawer'
+		else:
+			print 'console >> No username written'
+			
+			layout = BoxLayout(orientation='vertical')
+			lab = Label(text='Escriba su nombre de usuario')
+			btn = Button(text='Cerrar', size_hint=(1,.2))
+			
+			layout.add_widget(lab)
+			layout.add_widget(btn)
+
+			popup = Popup(
+				title='Error',
+				content=layout,
+				size_hint=(.8, .5)
+				)
+
+			btn.bind(on_press=popup.dismiss)
+			popup.open()
 
 class PlayViewerScreen(Screen):
 	pass
@@ -157,14 +208,14 @@ class PlayDrawerScreen(Screen):
 	def update_timer(self, second):
 		self.uxSeconds = int(time.strftime('%S', time.localtime()))
 
-
-sm = ScreenManager()
-sm.add_widget(PlayDrawerScreen(name='playDrawer'))
 sm.add_widget(LoginScreen(name='login'))
+sm.add_widget(PlayDrawerScreen(name='playDrawer'))
 sm.add_widget(PlayViewerScreen(name='playViewer'))
 
-
 class TouchtracerApp(App):
+
+	title = 'Touchtracer'
+	icon = 'icon.png'
 
 	def build(self):
 		Clock.schedule_interval(sm.get_screen('playDrawer').update_timer, 1)
