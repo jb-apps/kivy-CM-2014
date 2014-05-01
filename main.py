@@ -14,12 +14,14 @@ from kivy.uix.textinput import TextInput
 from kivy.uix.widget import Widget
 from kivy.uix.popup import Popup
 from kivy.uix.button import Button
+from kivy.uix.listview import ListView
+from kivy.adapters.listadapter import ListAdapter
 from kivy.properties import ObjectProperty, NumericProperty
 from kivy.clock import Clock
 from math import sqrt
 from random import random
 from kivy.uix.screenmanager import ScreenManager, Screen
-import threading, socket, time, re, time
+import threading, socket, time, re, time, json
 
 Builder.load_string("""
 <LoginScreen>:
@@ -44,6 +46,8 @@ Builder.load_string("""
 	        size_hint: .4,.1
 	        text: "Aceptar"
 			on_press: root.user_login()
+
+<UserListScreen>:
 
 <PlayViewerScreen>:
 	Label:
@@ -100,6 +104,71 @@ Builder.load_string("""
 """)
 
 sm = ScreenManager()
+id_user = -1
+
+class Utilities():
+
+	TCP_IP = 'proyec3.eii.us.es'
+	TCP_PORT = 5011
+
+	def send_message(self, message):
+		
+		BUFFER_SIZE = 1024
+		MESSAGE = message
+		try:
+			s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+			s.connect((self.TCP_IP, self.TCP_PORT))
+			s.send(MESSAGE)
+			data = s.recv(BUFFER_SIZE)
+			s.send('{"action":"close"}')
+			# Capturamos el mensaje de respuesta del servidor para que no se quede esperando nuestra respuesta
+			s.recv(BUFFER_SIZE)
+			s.close()
+		except:
+			print "console >> Connection problem"
+			data = ''
+
+		return data
+
+	def popup(self, txt_title, txt_content):
+		layout = BoxLayout(orientation='vertical')
+		lab = Label(text=txt_content)
+		btn = Button(text='Cerrar', size_hint=(1,.2))
+		
+		layout.add_widget(lab)
+		layout.add_widget(btn)
+
+		popup = Popup(
+			title=txt_title,
+			content=layout,
+			size_hint=(.8, .5)
+			)
+
+		btn.bind(on_press=popup.dismiss)
+		popup.open()
+
+
+class UserListScreen(Screen):
+	def __init__(self, **kwargs):
+		super(UserListScreen, self).__init__(**kwargs)
+		# Crear listado de usuarios conectados
+		utilities = Utilities()
+		global id_user
+		server_response = json.loads(utilities.send_message('{"action":"GET_ONLINE_USER","data":{"id_user":"'+str(id_user)+'"}}'))
+		#list_view = ListView(
+        #    item_strings=[str(str(key) + ', ' + str(value)) for key, value in server_response['data'].iteritems()])
+		list_adapter = ListAdapter(
+			data=[str(str(key) + ', ' + str(value)) for key, value in server_response['data'].iteritems()],
+			selection_mode='single',
+			cls=Label)
+		list_adapter.bind(on_selection_change=self.selected_user)
+		list_view = ListView(adapter=list_adapter)
+		self.add_widget(list_view)
+		#self.add_widget(Button(text="Jugar"))
+
+	def selected_user(self):
+		print 'Se ha seleccionado un usuario'
+
 
 class LoginScreen(Screen):
 	def __init__(self, **kwargs):
@@ -110,26 +179,26 @@ class LoginScreen(Screen):
 	'''
 	# Gestiona el nombre de usuario al loguearse
 	def user_login(self):
-		if len(self.ids.txt_userLogin.text) != 0:
-			self.manager.current = 'playDrawer'
+		username = self.ids.txt_userLogin.text
+		utilities = Utilities()
+		if len(username) != 0:
+			server_response = json.loads(utilities.send_message('{"action":"INIT_SESSION", "data":{"username":"'+str(username)+'"}}'))
+			if server_response["status"] == 'OK':
+				global id_user
+				id_user = server_response["data"]["id_user"]
+				print 'console >> Usuario con id',id_user,'conectado'
+				
+				sm.add_widget(UserListScreen(name='userList'))
+				self.manager.current = 'userList'
+			else:
+				# Mostrar popup
+				utilities.popup('Error', 'Elija otro nombre de usuario')
+
 		else:
 			print 'console >> No username written'
+			utilities.popup('Error', 'Escriba su nombre de usuario')
 			
-			layout = BoxLayout(orientation='vertical')
-			lab = Label(text='Escriba su nombre de usuario')
-			btn = Button(text='Cerrar', size_hint=(1,.2))
 			
-			layout.add_widget(lab)
-			layout.add_widget(btn)
-
-			popup = Popup(
-				title='Error',
-				content=layout,
-				size_hint=(.8, .5)
-				)
-
-			btn.bind(on_press=popup.dismiss)
-			popup.open()
 
 class PlayViewerScreen(Screen):
 	pass
