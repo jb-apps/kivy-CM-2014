@@ -159,7 +159,7 @@ class UserListScreen(Screen):
         #    item_strings=[str(str(key) + ', ' + str(value)) for key, value in server_response['data'].iteritems()])
 		list_adapter = ListAdapter(
 			data=[str(str(key) + ', ' + str(value)) for key, value in server_response['data'].iteritems()],
-			selection_mode='single',
+			selection_mode='multiple',
 			cls=Label)
 		list_adapter.bind(on_selection_change=self.selected_user)
 		list_view = ListView(adapter=list_adapter)
@@ -198,8 +198,6 @@ class LoginScreen(Screen):
 			print 'console >> No username written'
 			utilities.popup('Error', 'Escriba su nombre de usuario')
 			
-			
-
 class PlayViewerScreen(Screen):
 	pass
 
