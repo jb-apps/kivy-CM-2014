@@ -23,9 +23,8 @@ from random import random
 from kivy.uix.screenmanager import ScreenManager, Screen
 import threading, socket, time, re, time, json
 
-<<<<<<< HEAD
 Builder.load_file('touchtracer.kv')
-=======
+
 Builder.load_string("""
 <LoginScreen>:
 	FloatLayout:
@@ -105,7 +104,6 @@ Builder.load_string("""
 				pos: 270, 430
 
 """)
->>>>>>> e2c12b4190d9f2b2804d8798b7b2947e166968fd
 
 sm = ScreenManager()
 id_user = -1
@@ -177,8 +175,7 @@ class UserListScreen(Screen):
 class LoginScreen(Screen):
 	def __init__(self, **kwargs):
 		super(LoginScreen, self).__init__(**kwargs)
-<<<<<<< HEAD
-=======
+
 
 	'''
 		Metodos auxiliares de la aplicacion
@@ -287,11 +284,7 @@ class PlayDrawerScreen(Screen):
 	def update_timer(self, second):
 		self.uxSeconds = int(time.strftime('%S', time.localtime()))
 
-<<<<<<< HEAD
-
 sm = ScreenManager()
-=======
->>>>>>> e2c12b4190d9f2b2804d8798b7b2947e166968fd
 sm.add_widget(LoginScreen(name='login'))
 sm.add_widget(PlayDrawerScreen(name='playDrawer'))
 sm.add_widget(PlayViewerScreen(name='playViewer'))
