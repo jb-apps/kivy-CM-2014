@@ -12,18 +12,200 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
 from kivy.uix.textinput import TextInput
 from kivy.uix.widget import Widget
+from kivy.uix.popup import Popup
+from kivy.uix.button import Button
+from kivy.uix.listview import ListView
+from kivy.adapters.listadapter import ListAdapter
 from kivy.properties import ObjectProperty, NumericProperty
 from kivy.clock import Clock
 from math import sqrt
 from random import random
 from kivy.uix.screenmanager import ScreenManager, Screen
-import threading, socket, time, re, time
+import threading, socket, time, re, time, json
 
+<<<<<<< HEAD
 Builder.load_file('touchtracer.kv')
+=======
+Builder.load_string("""
+<LoginScreen>:
+	FloatLayout:
+		Label:
+			font_size: root.height*0.05
+			size_hint: .4,.1
+			pos_hint: {'x':.3, 'y':.7}
+			text: 'Username'
+		
+		TextInput:
+			id: txt_userLogin
+			font_size: root.height*0.05
+			text:''
+			size_hint:.6,.1
+			pos_hint: {'x':.2, 'y':.6}
+			multiline: False
+
+		Button:
+	        font_size: root.height*0.05
+	        pos_hint: {'x':.3, 'y':.48}
+	        size_hint: .4,.1
+	        text: "Aceptar"
+			on_press: root.user_login()
+
+<UserListScreen>:
+
+<PlayViewerScreen>:
+	Label:
+		text: 'PlayViewerScreen'
+
+<PlayDrawerScreen>:
+	canvas:
+		Color:
+			rgb: 1, 1, 1
+		Rectangle:
+			source: 'data/images/background.jpg'
+			size: self.size
+
+	BoxLayout:
+		padding: '10dp'
+		spacing: '10dp'
+		size_hint: 1, None
+		pos_hint: {'top': 1}
+		height: '44dp'
+		Image:
+			size_hint: None, None
+			size: '24dp', '24dp'
+			source: 'data/logo/kivy-icon-64.png'
+			mipmap: True
+		Label:
+			height: '24dp'
+			text_size: self.width, None
+			color: (1, 1, 1, .8)
+			text: 'Kivy - PlayDrawerScreen'
+			valign: 'middle'
+
+	FloatLayout:
+		canvas:
+			Color:
+				rgb: 1, 1, 1
+			Ellipse:
+				size: 60, 60
+				pos: 260, 420
+			
+			Color:
+				rgb: 0, 0, 1
+			Ellipse:
+				size: 60, 60
+				angle_start: 0
+				angle_end: root.uxSeconds * 6
+				pos: 260, 420
+
+			Color:
+				rgb: 0, 0, 0
+			Ellipse:
+				size: 40, 40
+				pos: 270, 430
+
+""")
+>>>>>>> e2c12b4190d9f2b2804d8798b7b2947e166968fd
+
+sm = ScreenManager()
+id_user = -1
+
+class Utilities():
+
+	TCP_IP = 'proyec3.eii.us.es'
+	TCP_PORT = 5011
+
+	def send_message(self, message):
+		
+		BUFFER_SIZE = 1024
+		MESSAGE = message
+		try:
+			s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+			s.connect((self.TCP_IP, self.TCP_PORT))
+			s.send(MESSAGE)
+			data = s.recv(BUFFER_SIZE)
+			s.send('{"action":"close"}')
+			# Capturamos el mensaje de respuesta del servidor para que no se quede esperando nuestra respuesta
+			s.recv(BUFFER_SIZE)
+			s.close()
+		except:
+			print "console >> Connection problem"
+			data = ''
+
+		return data
+
+	def popup(self, txt_title, txt_content):
+		layout = BoxLayout(orientation='vertical')
+		lab = Label(text=txt_content)
+		btn = Button(text='Cerrar', size_hint=(1,.2))
+		
+		layout.add_widget(lab)
+		layout.add_widget(btn)
+
+		popup = Popup(
+			title=txt_title,
+			content=layout,
+			size_hint=(.8, .5)
+			)
+
+		btn.bind(on_press=popup.dismiss)
+		popup.open()
+
+
+class UserListScreen(Screen):
+	def __init__(self, **kwargs):
+		super(UserListScreen, self).__init__(**kwargs)
+		# Crear listado de usuarios conectados
+		utilities = Utilities()
+		global id_user
+		server_response = json.loads(utilities.send_message('{"action":"GET_ONLINE_USER","data":{"id_user":"'+str(id_user)+'"}}'))
+		#list_view = ListView(
+        #    item_strings=[str(str(key) + ', ' + str(value)) for key, value in server_response['data'].iteritems()])
+		list_adapter = ListAdapter(
+			data=[str(str(key) + ', ' + str(value)) for key, value in server_response['data'].iteritems()],
+			selection_mode='single',
+			cls=Label)
+		list_adapter.bind(on_selection_change=self.selected_user)
+		list_view = ListView(adapter=list_adapter)
+		self.add_widget(list_view)
+		#self.add_widget(Button(text="Jugar"))
+
+	def selected_user(self):
+		print 'Se ha seleccionado un usuario'
+
 
 class LoginScreen(Screen):
 	def __init__(self, **kwargs):
 		super(LoginScreen, self).__init__(**kwargs)
+<<<<<<< HEAD
+=======
+
+	'''
+		Metodos auxiliares de la aplicacion
+	'''
+	# Gestiona el nombre de usuario al loguearse
+	def user_login(self):
+		username = self.ids.txt_userLogin.text
+		utilities = Utilities()
+		if len(username) != 0:
+			server_response = json.loads(utilities.send_message('{"action":"INIT_SESSION", "data":{"username":"'+str(username)+'"}}'))
+			if server_response["status"] == 'OK':
+				global id_user
+				id_user = server_response["data"]["id_user"]
+				print 'console >> Usuario con id',id_user,'conectado'
+				
+				sm.add_widget(UserListScreen(name='userList'))
+				self.manager.current = 'userList'
+			else:
+				# Mostrar popup
+				utilities.popup('Error', 'Elija otro nombre de usuario')
+
+		else:
+			print 'console >> No username written'
+			utilities.popup('Error', 'Escriba su nombre de usuario')
+			
+			
+>>>>>>> e2c12b4190d9f2b2804d8798b7b2947e166968fd
 
 class PlayViewerScreen(Screen):
 	pass
@@ -102,13 +284,19 @@ class PlayDrawerScreen(Screen):
 	def update_timer(self, second):
 		self.uxSeconds = int(time.strftime('%S', time.localtime()))
 
+<<<<<<< HEAD
 
 sm = ScreenManager()
+=======
+>>>>>>> e2c12b4190d9f2b2804d8798b7b2947e166968fd
 sm.add_widget(LoginScreen(name='login'))
 sm.add_widget(PlayDrawerScreen(name='playDrawer'))
 sm.add_widget(PlayViewerScreen(name='playViewer'))
 
 class TouchtracerApp(App):
+
+	title = 'Touchtracer'
+	icon = 'icon.png'
 
 	def build(self):
 		Clock.schedule_interval(sm.get_screen('playDrawer').update_timer, 1)
