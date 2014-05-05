@@ -23,7 +23,7 @@ from random import random
 from kivy.uix.screenmanager import ScreenManager, Screen
 import threading, socket, time, re, time, json
 
-Builder.load_file('touchtracer.kv')
+#Builder.load_file('touchtracer.kv')
 
 Builder.load_string("""
 <LoginScreen>:
@@ -106,13 +106,23 @@ Builder.load_string("""
 """)
 
 sm = ScreenManager()
-id_user = -1
+id_user = -1 			# lo inicilizamos a un indice no valido en la BD
 
+"""
+	Utilities: Clase de utilidades para las demas clases
+"""
 class Utilities():
 
 	TCP_IP = 'proyec3.eii.us.es'
 	TCP_PORT = 5011
 
+	"""
+		Usado para el envio de cualquier mensaje al servidor.
+		Devuelve el dato enviado como respuesta del servidor. Si ocurre cualquier error,
+		devuelve cadena vacia.
+
+		NOTA: Los metodos aqui escritos no deben imprimir nada por pantalla.
+	"""
 	def send_message(self, message):
 		
 		BUFFER_SIZE = 1024
@@ -127,7 +137,6 @@ class Utilities():
 			s.recv(BUFFER_SIZE)
 			s.close()
 		except:
-			print "console >> Connection problem"
 			data = ''
 
 		return data
@@ -156,11 +165,11 @@ class UserListScreen(Screen):
 		# Crear listado de usuarios conectados
 		utilities = Utilities()
 		global id_user
-		server_response = json.loads(utilities.send_message('{"action":"GET_ONLINE_USER","data":{"id_user":"'+str(id_user)+'"}}'))
+		js_response = json.loads(utilities.send_message('{"action":"GET_ONLINE_USER","data":{"id_user":"'+str(id_user)+'"}}'))
 		#list_view = ListView(
-        #    item_strings=[str(str(key) + ', ' + str(value)) for key, value in server_response['data'].iteritems()])
+        #    item_strings=[str(str(key) + ', ' + str(value)) for key, value in js_response['data'].iteritems()])
 		list_adapter = ListAdapter(
-			data=[str(str(key) + ', ' + str(value)) for key, value in server_response['data'].iteritems()],
+			data=[str(str(key) + ', ' + str(value)) for key, value in js_response['data'].iteritems()],
 			selection_mode='multiple',
 			cls=Label)
 		list_adapter.bind(on_selection_change=self.selected_user)
@@ -185,28 +194,27 @@ class LoginScreen(Screen):
 		username = self.ids.txt_userLogin.text
 		utilities = Utilities()
 		if len(username) != 0:
-			server_response = json.loads(utilities.send_message('{"action":"INIT_SESSION", "data":{"username":"'+str(username)+'"}}'))
-			if server_response["status"] == 'OK':
-				global id_user
-				id_user = server_response["data"]["id_user"]
-				print 'console >> Usuario con id',id_user,'conectado'
-				
-				sm.add_widget(UserListScreen(name='userList'))
-				self.manager.current = 'userList'
+			server_response = utilities.send_message('{"action":"INIT_SESSION", "data":{"username":"'+str(username)+'"}}')
+			if server_response != '':
+				js_response = json.loads(server_response)
+				if js_response != '' and js_response["status"] == 'OK':
+					global id_user
+					id_user = js_response["data"]["id_user"]
+					print 'console >> Usuario con id',id_user,'conectado'
+					
+					sm.add_widget(UserListScreen(name='userList'))
+					self.manager.current = 'userList'
+				else:
+					# Mostrar popup
+					utilities.popup('Error', 'Elija otro nombre de usuario')
 			else:
-				# Mostrar popup
-				utilities.popup('Error', 'Elija otro nombre de usuario')
-
+				print 'console >> Connection problem'
+				utilities.popup('Error', 'Error de conexion')
 		else:
 			print 'console >> No username written'
 			utilities.popup('Error', 'Escriba su nombre de usuario')
 			
-<<<<<<< HEAD
-=======
-			
->>>>>>> e2c12b4190d9f2b2804d8798b7b2947e166968fd
 
->>>>>>> b3bb3ce34e38faa9f46bbe80713f721c67741331
 class PlayViewerScreen(Screen):
 	pass
 
