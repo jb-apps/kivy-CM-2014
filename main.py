@@ -15,6 +15,7 @@ from kivy.uix.widget import Widget
 from kivy.uix.popup import Popup
 from kivy.uix.button import Button
 from kivy.uix.listview import ListView
+from kivy.uix.listview import ListItemButton
 from kivy.adapters.listadapter import ListAdapter
 from kivy.properties import ObjectProperty, NumericProperty
 from kivy.clock import Clock
@@ -158,23 +159,31 @@ class Utilities():
 		btn.bind(on_press=popup.dismiss)
 		popup.open()
 
-
+"""
+	Crear listado de usuarios conectados
+"""
 class UserListScreen(Screen):
 	def __init__(self, **kwargs):
 		super(UserListScreen, self).__init__(**kwargs)
-		# Crear listado de usuarios conectados
 		utilities = Utilities()
 		global id_user
 		js_response = json.loads(utilities.send_message('{"action":"GET_ONLINE_USER","data":{"id_user":"'+str(id_user)+'"}}'))
-		#list_view = ListView(
-        #    item_strings=[str(str(key) + ', ' + str(value)) for key, value in js_response['data'].iteritems()])
-		list_adapter = ListAdapter(
-			data=[str(str(key) + ', ' + str(value)) for key, value in js_response['data'].iteritems()],
-			selection_mode='multiple',
-			cls=Label)
-		list_adapter.bind(on_selection_change=self.selected_user)
-		list_view = ListView(adapter=list_adapter)
-		self.add_widget(list_view)
+		
+		list_item_args_converter = lambda row_index, obj: {'text': str(obj),
+                                                           'size_hint_y': None,
+                                                           'height': 50,
+                                                           'background_color': (.5,.5,.5,1)}
+		print js_response['data']
+		self.list_adapter = \
+			ListAdapter(data=js_response['data'],
+						args_converter=list_item_args_converter,
+						selection_mode='single',
+						propagate_selection_to_data=False,
+						allow_empty_selection=True,
+						cls=ListItemButton)
+		#self.list_adapter.bind(on_selection_change=selected_user)
+		self.list_view = ListView(adapter=self.list_adapter)
+		self.add_widget(self.list_view)
 		#self.add_widget(Button(text="Jugar"))
 
 	def selected_user(self):
