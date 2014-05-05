@@ -169,25 +169,25 @@ class UserListScreen(Screen):
 		global id_user
 		js_response = json.loads(utilities.send_message('{"action":"GET_ONLINE_USER","data":{"id_user":"'+str(id_user)+'"}}'))
 		
-		list_item_args_converter = lambda row_index, obj: {'text': str(obj),
+		list_item_args_converter = lambda row_index, obj: {'text': obj + ' ---- Ptos: ' + str(js_response['data'][obj]),
                                                            'size_hint_y': None,
                                                            'height': 50,
-                                                           'background_color': (.5,.5,.5,1)}
+                                                           'selected_color': [.5,.5,.5,1],
+                                                           'deselected_color': [.3,.3,.3,1]}
 		print js_response['data']
 		self.list_adapter = \
 			ListAdapter(data=js_response['data'],
 						args_converter=list_item_args_converter,
 						selection_mode='single',
 						propagate_selection_to_data=False,
-						allow_empty_selection=True,
+						allow_empty_selection=False,
 						cls=ListItemButton)
-		#self.list_adapter.bind(on_selection_change=selected_user)
+		#self.list_adapter.bind(on_selection_change=self.selected_user)
+		
 		self.list_view = ListView(adapter=self.list_adapter)
 		self.add_widget(self.list_view)
+		print self.list_adapter.selection  # como saber quien esta seleccionado
 		#self.add_widget(Button(text="Jugar"))
-
-	def selected_user(self):
-		print 'Se ha seleccionado un usuario'
 
 
 class LoginScreen(Screen):
