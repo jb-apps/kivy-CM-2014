@@ -25,6 +25,9 @@ from random import random
 from kivy.uix.screenmanager import ScreenManager, Screen
 import threading, socket, time, re, time, json
 
+<<<<<<< HEAD
+Builder.load_file('touchtracer.kv')
+=======
 #Builder.load_file('touchtracer.kv')
 
 Builder.load_string("""
@@ -118,6 +121,7 @@ Builder.load_string("""
 				pos: 270, 430
 
 """)
+>>>>>>> 52e9cd9a4485011052ba2c7a8ac3a2f0c2af6aed
 
 sm = ScreenManager()
 id_user = -1 			# lo inicilizamos a un indice no valido en la BD

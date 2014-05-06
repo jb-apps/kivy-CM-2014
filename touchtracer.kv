@@ -9,6 +9,7 @@
 			text: 'Username'
 		
 		TextInput:
+            id: txt_userLogin
 			font_size: root.height*0.05
 			text:''
 			size_hint:.6,.1
@@ -20,8 +21,9 @@
 	        pos_hint: {'x':.3, 'y':.48}
 	        size_hint: .4,.1
 	        text: "Aceptar"
-            on_press: root.manager.current = 'playDrawer'
-			#on_release: root.btn_click()
+            on_press: root.user_login()
+
+<UserListScreen>:
 
 <PlayViewerScreen>:
 	Label:
