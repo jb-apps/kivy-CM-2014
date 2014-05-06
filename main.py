@@ -15,6 +15,7 @@ from kivy.uix.widget import Widget
 from kivy.uix.popup import Popup
 from kivy.uix.button import Button
 from kivy.uix.listview import ListView
+from kivy.uix.listview import ListItemButton
 from kivy.adapters.listadapter import ListAdapter
 from kivy.properties import ObjectProperty, NumericProperty
 from kivy.clock import Clock
@@ -23,7 +24,99 @@ from random import random
 from kivy.uix.screenmanager import ScreenManager, Screen
 import threading, socket, time, re, time, json
 
+<<<<<<< HEAD
 Builder.load_file('touchtracer.kv')
+=======
+#Builder.load_file('touchtracer.kv')
+
+Builder.load_string("""
+<LoginScreen>:
+	FloatLayout:
+		Label:
+			font_size: root.height*0.05
+			size_hint: .4,.1
+			pos_hint: {'x':.3, 'y':.7}
+			text: 'Username'
+		
+		TextInput:
+			id: txt_userLogin
+			font_size: root.height*0.05
+			text:''
+			size_hint:.6,.1
+			pos_hint: {'x':.2, 'y':.6}
+			multiline: False
+
+		Button:
+	        font_size: root.height*0.05
+	        pos_hint: {'x':.3, 'y':.48}
+	        size_hint: .4,.1
+	        text: "Aceptar"
+			on_press: root.user_login()
+
+<UserListScreen>:
+	ListView:
+		id: lst_user
+	Button:
+		size_hint: (1, None)
+		height: 50
+		markup: True
+		text: 'Jugar'
+		on_press: root.play()
+
+<PlayViewerScreen>:
+	Label:
+		text: 'PlayViewerScreen'
+
+<PlayDrawerScreen>:
+	canvas:
+		Color:
+			rgb: 1, 1, 1
+		Rectangle:
+			source: 'data/images/background.jpg'
+			size: self.size
+
+	BoxLayout:
+		padding: '10dp'
+		spacing: '10dp'
+		size_hint: 1, None
+		pos_hint: {'top': 1}
+		height: '44dp'
+		Image:
+			size_hint: None, None
+			size: '24dp', '24dp'
+			source: 'data/logo/kivy-icon-64.png'
+			mipmap: True
+		Label:
+			height: '24dp'
+			text_size: self.width, None
+			color: (1, 1, 1, .8)
+			text: 'Kivy - PlayDrawerScreen'
+			valign: 'middle'
+
+	FloatLayout:
+		canvas:
+			Color:
+				rgb: 1, 1, 1
+			Ellipse:
+				size: 60, 60
+				pos: 260, 420
+			
+			Color:
+				rgb: 0, 0, 1
+			Ellipse:
+				size: 60, 60
+				angle_start: 0
+				angle_end: root.uxSeconds * 6
+				pos: 260, 420
+
+			Color:
+				rgb: 0, 0, 0
+			Ellipse:
+				size: 40, 40
+				pos: 270, 430
+
+""")
+>>>>>>> 52e9cd9a4485011052ba2c7a8ac3a2f0c2af6aed
 
 sm = ScreenManager()
 id_user = -1 			# lo inicilizamos a un indice no valido en la BD
@@ -78,33 +171,51 @@ class Utilities():
 		btn.bind(on_press=popup.dismiss)
 		popup.open()
 
-
+"""
+	Crear listado de usuarios conectados
+"""
 class UserListScreen(Screen):
 	def __init__(self, **kwargs):
 		super(UserListScreen, self).__init__(**kwargs)
-		# Crear listado de usuarios conectados
+		
 		utilities = Utilities()
 		global id_user
 		js_response = json.loads(utilities.send_message('{"action":"GET_ONLINE_USER","data":{"id_user":"'+str(id_user)+'"}}'))
-		#list_view = ListView(
-        #    item_strings=[str(str(key) + ', ' + str(value)) for key, value in js_response['data'].iteritems()])
-		list_adapter = ListAdapter(
-			data=[str(str(key) + ', ' + str(value)) for key, value in js_response['data'].iteritems()],
-			selection_mode='multiple',
-			cls=Label)
-		list_adapter.bind(on_selection_change=self.selected_user)
-		list_view = ListView(adapter=list_adapter)
+		
+		list_item_args_converter = \
+			lambda row_index, obj: {'text': '[b]'+obj+'[/b] ---- Ptos: ' + str(js_response['data'][obj]),
+                                    'size_hint_y': None,
+                                    'height': 50,
+                                    'selected_color': [.5,.5,.5,1],
+                                    'deselected_color': [.3,.3,.3,1],
+                                    'markup': True}
+		
+		print 'console >> Connected users', js_response['data']
+		
+		self.list_adapter = \
+			ListAdapter(data=js_response['data'],
+						args_converter=list_item_args_converter,
+						selection_mode='single',
+						propagate_selection_to_data=False,
+						allow_empty_selection=False,
+						cls=ListItemButton)
+		
+		list_view = self.ids.lst_user
+		list_view = ListView(adapter=self.list_adapter)
 		self.add_widget(list_view)
-		#self.add_widget(Button(text="Jugar"))
+		#btn = Button(text='[b]Jugar[/b]', size_hint=(1,None), height=50, markup=True)
+		#btn.bind(on_press=self.play())
+		#self.add_widget(btn)
 
-	def selected_user(self):
-		print 'Se ha seleccionado un usuario'
+	def play(self):
+		#print 'console >> Starting the game',self.list_adapter.selection  # como saber quien esta seleccionado
+		#self.manager.current = 'playDrawer'
+		print "hola mundo"
 
 
 class LoginScreen(Screen):
 	def __init__(self, **kwargs):
 		super(LoginScreen, self).__init__(**kwargs)
-
 
 	'''
 		Metodos auxiliares de la aplicacion
