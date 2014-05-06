@@ -9,6 +9,7 @@ from kivy.lang import Builder
 from kivy.graphics import Color, Rectangle, Point, GraphicException, Ellipse, Line
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.gridlayout import GridLayout
 from kivy.uix.label import Label
 from kivy.uix.textinput import TextInput
 from kivy.uix.widget import Widget
@@ -51,14 +52,18 @@ Builder.load_string("""
 			on_press: root.user_login()
 
 <UserListScreen>:
-	ListView:
-		id: lst_user
-	Button:
-		size_hint: (1, None)
-		height: 50
-		markup: True
-		text: 'Jugar'
-		on_press: root.play()
+	GridLayout:
+		cols: 1
+		
+		ListView:
+			id: lst_user
+
+		Button:
+			size_hint: (1, None)
+			height: 50
+			markup: True
+			text: '[b]Jugar[/b]'
+			on_press: root.play()
 
 <PlayViewerScreen>:
 	Label:
