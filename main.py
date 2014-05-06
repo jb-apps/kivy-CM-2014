@@ -51,6 +51,14 @@ Builder.load_string("""
 			on_press: root.user_login()
 
 <UserListScreen>:
+	ListView:
+		id: lst_user
+	Button:
+		size_hint: (1, None)
+		height: 50
+		markup: True
+		text: 'Jugar'
+		on_press: root.play()
 
 <PlayViewerScreen>:
 	Label:
@@ -165,16 +173,21 @@ class Utilities():
 class UserListScreen(Screen):
 	def __init__(self, **kwargs):
 		super(UserListScreen, self).__init__(**kwargs)
+		
 		utilities = Utilities()
 		global id_user
 		js_response = json.loads(utilities.send_message('{"action":"GET_ONLINE_USER","data":{"id_user":"'+str(id_user)+'"}}'))
 		
-		list_item_args_converter = lambda row_index, obj: {'text': obj + ' ---- Ptos: ' + str(js_response['data'][obj]),
-                                                           'size_hint_y': None,
-                                                           'height': 50,
-                                                           'selected_color': [.5,.5,.5,1],
-                                                           'deselected_color': [.3,.3,.3,1]}
-		print js_response['data']
+		list_item_args_converter = \
+			lambda row_index, obj: {'text': '[b]'+obj+'[/b] ---- Ptos: ' + str(js_response['data'][obj]),
+                                    'size_hint_y': None,
+                                    'height': 50,
+                                    'selected_color': [.5,.5,.5,1],
+                                    'deselected_color': [.3,.3,.3,1],
+                                    'markup': True}
+		
+		print 'console >> Connected users', js_response['data']
+		
 		self.list_adapter = \
 			ListAdapter(data=js_response['data'],
 						args_converter=list_item_args_converter,
@@ -182,18 +195,23 @@ class UserListScreen(Screen):
 						propagate_selection_to_data=False,
 						allow_empty_selection=False,
 						cls=ListItemButton)
-		#self.list_adapter.bind(on_selection_change=self.selected_user)
 		
-		self.list_view = ListView(adapter=self.list_adapter)
-		self.add_widget(self.list_view)
-		print self.list_adapter.selection  # como saber quien esta seleccionado
-		#self.add_widget(Button(text="Jugar"))
+		list_view = self.ids.lst_user
+		list_view = ListView(adapter=self.list_adapter)
+		self.add_widget(list_view)
+		#btn = Button(text='[b]Jugar[/b]', size_hint=(1,None), height=50, markup=True)
+		#btn.bind(on_press=self.play())
+		#self.add_widget(btn)
+
+	def play(self):
+		#print 'console >> Starting the game',self.list_adapter.selection  # como saber quien esta seleccionado
+		#self.manager.current = 'playDrawer'
+		print "hola mundo"
 
 
 class LoginScreen(Screen):
 	def __init__(self, **kwargs):
 		super(LoginScreen, self).__init__(**kwargs)
-
 
 	'''
 		Metodos auxiliares de la aplicacion
