@@ -125,6 +125,9 @@ class UserListScreen(Screen):
 		sm.add_widget(UserListScreen(name='playDrawer'))
 		self.manager.current = 'playDrawer'
 
+	def back(self):
+		self.manager.current = 'login'
+
 
 class LoginScreen(Screen):
 	def __init__(self, **kwargs):
