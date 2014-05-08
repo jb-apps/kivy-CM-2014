@@ -1,3 +1,4 @@
+# This Python file uses the following encoding: utf-8
 import kivy
 kivy.require('1.1.2')
 from kivy.config import Config
@@ -24,20 +25,23 @@ from math import sqrt
 from random import random
 from kivy.uix.screenmanager import ScreenManager, Screen
 import threading, socket, time, re, time, json
+from kivy.core.window import Window
 
 #Builder.load_file('touchtracer.kv')
-
 Builder.load_string("""
+
 <LoginScreen>:
 	FloatLayout:
 		Label:
 			font_size: root.height*0.05
 			size_hint: .4,.1
 			pos_hint: {'x':.3, 'y':.7}
-			text: 'Username'
+			multiline: True
+			text: 'Ingrese nombre de usuario'
+
 		
 		TextInput:
-			id: txt_userLogin
+            id: txt_userLogin
 			font_size: root.height*0.05
 			text:''
 			size_hint:.6,.1
@@ -49,8 +53,9 @@ Builder.load_string("""
 	        pos_hint: {'x':.3, 'y':.48}
 	        size_hint: .4,.1
 	        text: "Aceptar"
-			on_press: root.user_login()
+            on_press: root.user_login()
 
+<<<<<<< HEAD
 <UserListScreen@GridLayout>:
 	cols: 1
 
@@ -60,11 +65,70 @@ Builder.load_string("""
 		markup: True
 		text: '[b]Jugar[/b]'
 		on_press: root.play()
+=======
+<UserListScreen>:
+	GridLayout:
+<<<<<<< HEAD
+		rows: 2
+		spacing: 5
+		BoxLayout:
+            padding: '2sp'
+            canvas:
+                Color:
+                    rgba: 1, 1, 1, .3
+                Rectangle:
+                    size: self.size
+                    pos: self.pos
+            size_hint: 1, None
+            height: '45sp'
+            
+            Button:
+            	id: back_button
+                size_hint: None, 1
+                width: root.width*0.20
+                text: 'Atrás'
+            Widget:
+            BoxLayout:
+                size_hint: None, 1
+                width: root.width*0.5
+                Label:
+                    text: "Usuarios"
+            Button:
+            	id: play_button
+                size_hint: None, 1
+                width: root.width*0.20
+                text: 'Play'
+                on_press: root.play()
+		
+		BoxLayout:
+			id:lst_user
+			orientation: 'vertical'
+			canvas:
+				Color:
+					rgba: 1,1,1,.6
+				Rectangle:
+					size: self.size
+					pos: self.pos
+=======
+		cols: 1
+		
+		ListView:
+			id: lst_user
+
+		Button:
+			size_hint: (1, None)
+			height: 50
+			markup: True
+			text: '[b]Jugar[/b]'
+			on_press: root.play()
+>>>>>>> 0076cb0eb7bbfb4c86d69f1a28f6d17d203da94a
+>>>>>>> 3fa55a63b328e8580183ec3b8a98d3784f407974
 
 <PlayDrawerScreen>:
 	Label:
 		text: 'PlayDrawerScreen'
 
+<<<<<<< HEAD
 <PlayViewerScreen>:
 	canvas:
 		Color:
@@ -114,6 +178,82 @@ Builder.load_string("""
 				pos: 270, 430
 
 """)
+=======
+<StatisticsScreen>:
+	Label:
+		text: 'StatisticsScreen'
+
+<PlayDrawerScreen>:
+	GridLayout:
+		rows: 2
+		spacing: 5
+
+
+		BoxLayout:
+			orientation: 'horizontal'
+            padding: '2sp'
+            canvas:
+                Color:
+                    rgba: 1, 1, 1, .3
+                Rectangle:
+                    size: self.size
+                    pos: self.pos
+            size_hint: 1, None
+            height: '45sp'
+            
+            GridLayout:
+            	cols:4
+            	spacing: 10
+
+	            Button:
+	            	id: go_out_button
+	                size_hint: None, 1
+	                width: root.width*0.20
+	                text: 'Salir'
+	                on_press: root.salir()
+
+				Label:
+					#height: '24dp'
+					text_size: self.width, None
+					color: (1, 1, 1, .8)
+					text: 'PlayDrawerScreen'
+					width: root.width*0.40
+
+				BoxLayout:
+					pos_hint:1,1
+					canvas:
+						Color:
+							rgba: 1, 1, 1,0.8
+						Ellipse:
+			                size: self.height,self.height
+							pos: self.pos
+						
+						Color:
+							rgba: 0, 0, 1, 0.7
+						Ellipse:
+			                size: self.height,self.height
+			                pos: self.pos
+							angle_start: 0
+							angle_end: root.uxSeconds * 6
+			                
+			    Button:
+	            	id: clear_button
+	                size_hint: None, 1
+	                width: root.width*0.20
+	                pos_hint:
+	                text: 'Borrar'
+	                on_press: root.borrarPantalla()
+
+		BoxLayout:
+			#size:root.width,root.height*0.2
+			canvas:
+				Color:
+					rgb: 1, 1, 1
+				Rectangle:
+					source: 'data/images/background.jpg'
+					size: self.size
+	""")
+>>>>>>> 3fa55a63b328e8580183ec3b8a98d3784f407974
 
 sm = ScreenManager()
 id_user = -1 			# lo inicilizamos a un indice no valido en la BD
@@ -172,6 +312,7 @@ class Utilities():
 	Crear listado de usuarios conectados
 """
 class UserListScreen(Screen):
+
 	def __init__(self, **kwargs):
 		super(UserListScreen, self).__init__(**kwargs)
 		
@@ -182,11 +323,12 @@ class UserListScreen(Screen):
 		list_item_args_converter = \
 			lambda row_index, obj: {'text': '[b]'+obj+'[/b] ---- Ptos: ' + str(js_response['data'][obj]),
                                     'size_hint_y': None,
-                                    'height': 50,
                                     'selected_color': [.5,.5,.5,1],
                                     'deselected_color': [.3,.3,.3,1],
                                     'markup': True}
+		print list_item_args_converter
 		
+		print 'height: ' + str(self.height)
 		print 'console >> Connected users', js_response['data']
 		
 		self.list_adapter = \
@@ -197,6 +339,7 @@ class UserListScreen(Screen):
 						allow_empty_selection=False,
 						cls=ListItemButton)
 		
+<<<<<<< HEAD
 		list_view = ListView(adapter=self.list_adapter, size_hint=(1,.8), pos_hint={'x':0,'center_y':.5}, scrolling=True)
 		self.add_widget(list_view)
 		#btn = Button(text='[b]Jugar[/b]', size_hint=(1,None), height=50, markup=True)
@@ -207,6 +350,18 @@ class UserListScreen(Screen):
 		print 'console >> Starting the game with',self.list_adapter.selection  # como saber quien esta seleccionado
 		# Verificar si el usuario esta en otra partida 
 		self.manager.current = 'playViewer'
+=======
+		list_view = ListView(adapter=self.list_adapter)
+		layout = self.ids.lst_user
+		layout.add_widget(list_view)
+
+	def play(self):
+		#print 'console >> Starting the game',self.list_adapter.selection  # como saber quien esta seleccionado
+		#self.manager.current = 'playDrawer'
+		#print "hola mundo"
+		sm.add_widget(UserListScreen(name='playDrawer'))
+		self.manager.current = 'playDrawer'
+>>>>>>> 3fa55a63b328e8580183ec3b8a98d3784f407974
 
 
 class LoginScreen(Screen):
@@ -319,11 +474,23 @@ class PlayViewerScreen(Screen):
 	def update_timer(self, second):
 		self.uxSeconds = int(time.strftime('%S', time.localtime()))
 
+	def salir(self):
+		pass
+
+	def borrarPantalla(self):
+		#Window.clear()
+		pass
+		
+
 sm = ScreenManager()
 sm.add_widget(LoginScreen(name='login'))
 sm.add_widget(PlayViewerScreen(name='playViewer'))
+<<<<<<< HEAD
 sm.add_widget(PlayDrawerScreen(name='playDrawer'))
 
+=======
+#sm.add_widget(StatisticsScreen(name='statisticsScreen'))
+>>>>>>> 3fa55a63b328e8580183ec3b8a98d3784f407974
 
 class TouchtracerApp(App):
 
