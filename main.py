@@ -10,6 +10,7 @@ from kivy.lang import Builder
 from kivy.graphics import Color, Rectangle, Point, GraphicException, Ellipse, Line
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.gridlayout import GridLayout
 from kivy.uix.label import Label
 from kivy.uix.textinput import TextInput
 from kivy.uix.widget import Widget
@@ -56,6 +57,7 @@ Builder.load_string("""
 
 <UserListScreen>:
 	GridLayout:
+<<<<<<< HEAD
 		rows: 2
 		spacing: 5
 		BoxLayout:
@@ -96,6 +98,19 @@ Builder.load_string("""
 				Rectangle:
 					size: self.size
 					pos: self.pos
+=======
+		cols: 1
+		
+		ListView:
+			id: lst_user
+
+		Button:
+			size_hint: (1, None)
+			height: 50
+			markup: True
+			text: '[b]Jugar[/b]'
+			on_press: root.play()
+>>>>>>> 0076cb0eb7bbfb4c86d69f1a28f6d17d203da94a
 
 <PlayViewerScreen>:
 	Label:
