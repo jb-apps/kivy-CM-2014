@@ -25,9 +25,6 @@ from random import random
 from kivy.uix.screenmanager import ScreenManager, Screen
 import threading, socket, time, re, time, json
 
-<<<<<<< HEAD
-Builder.load_file('touchtracer.kv')
-=======
 #Builder.load_file('touchtracer.kv')
 
 Builder.load_string("""
@@ -54,25 +51,21 @@ Builder.load_string("""
 	        text: "Aceptar"
 			on_press: root.user_login()
 
-<UserListScreen>:
-	GridLayout:
-		cols: 1
-		
-		ListView:
-			id: lst_user
+<UserListScreen@GridLayout>:
+	cols: 1
 
-		Button:
-			size_hint: (1, None)
-			height: 50
-			markup: True
-			text: '[b]Jugar[/b]'
-			on_press: root.play()
-
-<PlayViewerScreen>:
-	Label:
-		text: 'PlayViewerScreen'
+	Button:
+		size_hint: (1, None)
+		height: 50
+		markup: True
+		text: '[b]Jugar[/b]'
+		on_press: root.play()
 
 <PlayDrawerScreen>:
+	Label:
+		text: 'PlayDrawerScreen'
+
+<PlayViewerScreen>:
 	canvas:
 		Color:
 			rgb: 1, 1, 1
@@ -95,7 +88,7 @@ Builder.load_string("""
 			height: '24dp'
 			text_size: self.width, None
 			color: (1, 1, 1, .8)
-			text: 'Kivy - PlayDrawerScreen'
+			text: 'Kivy - PlayViewerScreen'
 			valign: 'middle'
 
 	FloatLayout:
@@ -121,7 +114,6 @@ Builder.load_string("""
 				pos: 270, 430
 
 """)
->>>>>>> 52e9cd9a4485011052ba2c7a8ac3a2f0c2af6aed
 
 sm = ScreenManager()
 id_user = -1 			# lo inicilizamos a un indice no valido en la BD
@@ -205,17 +197,16 @@ class UserListScreen(Screen):
 						allow_empty_selection=False,
 						cls=ListItemButton)
 		
-		list_view = self.ids.lst_user
-		list_view = ListView(adapter=self.list_adapter)
+		list_view = ListView(adapter=self.list_adapter, size_hint=(1,.8), pos_hint={'x':0,'center_y':.5}, scrolling=True)
 		self.add_widget(list_view)
 		#btn = Button(text='[b]Jugar[/b]', size_hint=(1,None), height=50, markup=True)
 		#btn.bind(on_press=self.play())
 		#self.add_widget(btn)
 
 	def play(self):
-		#print 'console >> Starting the game',self.list_adapter.selection  # como saber quien esta seleccionado
-		#self.manager.current = 'playDrawer'
-		print "hola mundo"
+		print 'console >> Starting the game with',self.list_adapter.selection  # como saber quien esta seleccionado
+		# Verificar si el usuario esta en otra partida 
+		self.manager.current = 'playViewer'
 
 
 class LoginScreen(Screen):
@@ -251,17 +242,17 @@ class LoginScreen(Screen):
 			utilities.popup('Error', 'Escriba su nombre de usuario')
 			
 
-class PlayViewerScreen(Screen):
+class PlayDrawerScreen(Screen):	
 	pass
 
-class PlayDrawerScreen(Screen):
+class PlayViewerScreen(Screen):
 
 	sock_server = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
 	server_port = 5006
 	uxSeconds = NumericProperty(0)
 	
 	def __init__(self, **kwargs):
-		super(PlayDrawerScreen, self).__init__(**kwargs)
+		super(PlayViewerScreen, self).__init__(**kwargs)
 		# Creamos el hilo del servidor
 		thread = threading.Thread(target=self.receive_points)
 		thread.start()
@@ -330,8 +321,9 @@ class PlayDrawerScreen(Screen):
 
 sm = ScreenManager()
 sm.add_widget(LoginScreen(name='login'))
-sm.add_widget(PlayDrawerScreen(name='playDrawer'))
 sm.add_widget(PlayViewerScreen(name='playViewer'))
+sm.add_widget(PlayDrawerScreen(name='playDrawer'))
+
 
 class TouchtracerApp(App):
 
@@ -339,11 +331,11 @@ class TouchtracerApp(App):
 	icon = 'icon.png'
 
 	def build(self):
-		Clock.schedule_interval(sm.get_screen('playDrawer').update_timer, 1)
+		Clock.schedule_interval(sm.get_screen('playViewer').update_timer, 1)
 		return sm
 
 	def on_stop(self):
-		sm.get_screen('playDrawer').stop_server()
+		sm.get_screen('playViewer').stop_server()
 
 if __name__ == '__main__':
 	TouchtracerApp().run()
