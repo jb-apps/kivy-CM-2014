@@ -180,6 +180,7 @@
 				text: 'PlayDrawerScreen'
 				width: root.width*0.40
 
+			# Temporizador
 			BoxLayout:
 				canvas:
 					Color:
@@ -194,13 +195,18 @@
 		                size: self.height,self.height
 		                pos: self.pos
 						angle_start: 0
-						angle_end: root.uxSeconds * 6
+						angle_end: root.uxSeconds * 12
 
 					Color:
 						rgba: 0, 0, 0, 0.9
 					Ellipse:
 		                size: self.height*.6,self.height*.6
 						pos:self.x*1.05,self.y*1.025
+
+				#Label:
+					#text: root.uxSecondsStr
+					#font_size: 10
+					#pos: self.x*1.10,self.y*1.075
 		                
 		    Button:
             	id: clear_button

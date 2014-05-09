@@ -20,7 +20,7 @@ from kivy.uix.listview import ListView
 from kivy.uix.listview import ListItemButton
 from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.adapters.listadapter import ListAdapter
-from kivy.properties import ObjectProperty, NumericProperty
+from kivy.properties import ObjectProperty, NumericProperty, StringProperty
 from kivy.clock import Clock
 from kivy.event import EventDispatcher
 from kivy.core.window import Window
@@ -167,12 +167,15 @@ class LoginScreen(Screen):
 
 class PlayViewerScreen(Screen):
 
-	uxSeconds = NumericProperty(0)
+	uxSeconds = NumericProperty(30)
+	#uxSecondsStr = StringProperty('')
 	def __init__(self, **kwargs):
 		super(PlayViewerScreen, self).__init__(**kwargs)
 
 	def update_timer(self, second):
-		self.uxSeconds = int(time.strftime('%S', time.localtime()))
+		if self.uxSeconds >= 0:
+			self.uxSeconds -= 1
+		#self.uxSecondsStr = str(self.uxSeconds)
 
 	def salir(self):
 		Utilities().popupCancelarAceptar('Warning', '    ¿seguro que desea salir? \n se contará como una perdida')
@@ -182,6 +185,7 @@ class PlayDrawerScreen(Screen):
 	sock_server = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
 	server_port = 5006
 	uxSeconds = NumericProperty(0)
+	#uxSecondsStr = StringProperty('')
 
 	def __init__(self, **kwargs):
 		super(PlayDrawerScreen, self).__init__(**kwargs)
@@ -257,7 +261,9 @@ class PlayDrawerScreen(Screen):
 			Line(points=d_float)
 	
 	def update_timer(self, second):
-		self.uxSeconds = int(time.strftime('%S', time.localtime()))
+		if self.uxSeconds <= 29:
+			self.uxSeconds += 1
+		#self.uxSecondsStr = str(self.uxSeconds)
 
 	def salir(self):
 		pass
