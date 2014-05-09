@@ -182,19 +182,17 @@ class PlayDrawerScreen(Screen):
 
 	def on_touch_down(self, touch):
 		w, h = Window.system_size
-		if touch.y > h-200:
-			print "antes touch.y=",touch.y
-			touch.y = h-200
-			print "despues touch.y=",touch.y
+		h_layout = self.ids.layout_barra_titulo.height
+		if touch.y > h-h_layout: touch.y = h-h_layout
+		
 		with self.ids.layout_dibujo.canvas:
 			touch.ud['line'] = Line(points=[touch.x, touch.y])
 
 	def on_touch_move(self, touch):
 		w, h = Window.system_size
-		if touch.y > h-200:
-			print "antes touch.y=",touch.y
-			touch.y = h-200
-			print "despues touch.y=",touch.y
+		h_layout = self.ids.layout_barra_titulo.height
+		if touch.y > h-h_layout: touch.y = h-h_layout
+
 		touch.ud['line'].points += [touch.x, touch.y]
 
 	def on_touch_up(self, touch):
