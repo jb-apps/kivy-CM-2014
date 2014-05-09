@@ -286,11 +286,14 @@ class PlayDrawerScreen(Screen):
 		#self.uxSecondsStr = str(self.uxSeconds)
 
 	def salir(self):
+		self.manager.current = 'userList'
+		self.remove_screen(self)
 		pass
 
 	def borrarPantalla(self):
 		#Window.clear()
-		pass
+		print "console >> Erasing drawing"
+		self.ids.layout_dibujo.canvas.clear()
 		
 
 sm = ScreenManager()
