@@ -27,7 +27,6 @@
             on_press: root.user_login()
 
 <UserListScreen>:
-	
 	GridLayout:
 		rows: 2
 		spacing: 5
@@ -148,6 +147,7 @@
 
 <PlayDrawerScreen>:
 	GridLayout:
+		id: gridLayout
 		rows: 2
 		spacing: 5
 
@@ -156,21 +156,23 @@
 			orientation: 'horizontal'
             padding: '2sp'
             spacing: '5sp'
+            
             canvas:
                 Color:
                     rgba: 1, 1, 1, .3
                 Rectangle:
                     size: self.size
                     pos: self.pos
+            
             size_hint: 1, None
-            #height: '55sp'
+            height: '55sp'
 
-            Button:
-            	id: go_out_button
-                size_hint: None, 1
-                width: root.width*0.20
-                text: 'Salir'
-                on_press: root.salir()
+#            Button:
+#            	id: go_out_button
+#                size_hint: None, 1
+#                width: root.width*0.20
+#                text: 'Salir'
+#                on_press: root.salir()
 
 			Label:
 				size_hint: None, 1
@@ -222,6 +224,6 @@
 				canvas:
 					Color:
 						rgb: 1, 1, 1
-					#Rectangle:
-					#	source: 'data/images/background.jpg'
-					#	size: self.size
+					Rectangle:
+						source: 'data/images/background.jpg'
+						size: self.size

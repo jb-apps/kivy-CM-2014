@@ -126,7 +126,6 @@ class UserListScreen(Screen):
 		#print 'console >> Starting the game',self.list_adapter.selection  # como saber quien esta seleccionado
 		#self.manager.current = 'playDrawer'
 		#print "hola mundo"
-		sm.add_widget(UserListScreen(name='playDrawer'))
 		self.manager.current = 'playDrawer'
 
 	def back(self):
@@ -248,10 +247,21 @@ class PlayViewerScreen(Screen):
 class PlayDrawerScreen(Screen):
 	uxSeconds = NumericProperty(0)
 	#uxSecondsStr = StringProperty('')
-
 	def __init__(self, **kwargs):
 		super(PlayDrawerScreen, self).__init__(**kwargs)
 		Clock.schedule_interval(self.update_timer, 1)
+		btn = Button(text='salir', id='go_out_button', size_hint=(None,1), 
+					 on_press=self.salir)
+		
+		rootLayout = self.ids.layout_barra_titulo
+		
+		#print "Entra"
+		i=0
+		for child in rootLayout.children:
+			i+=1
+		print i
+		rootLayout.add_widget(btn,i)
+
 
 	def on_touch_down(self, touch):
 		w, h = Window.system_size
