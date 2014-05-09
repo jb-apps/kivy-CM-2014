@@ -68,6 +68,7 @@ class Utilities():
 
 		return data
 
+
 	def popup(self, txt_title, txt_content):
 		layout = BoxLayout(orientation='vertical')
 		lab = Label(text=txt_content)
@@ -165,14 +166,23 @@ class LoginScreen(Screen):
 			
 
 class PlayViewerScreen(Screen):
-	pass
+
+	uxSeconds = NumericProperty(0)
+	def __init__(self, **kwargs):
+		super(PlayViewerScreen, self).__init__(**kwargs)
+
+	def update_timer(self, second):
+		self.uxSeconds = int(time.strftime('%S', time.localtime()))
+
+	def salir(self):
+		Utilities().popupCancelarAceptar('Warning', '    ¿seguro que desea salir? \n se contará como una perdida')
+
 
 class PlayDrawerScreen(Screen):
-
 	sock_server = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
 	server_port = 5006
 	uxSeconds = NumericProperty(0)
-	
+
 	def __init__(self, **kwargs):
 		super(PlayDrawerScreen, self).__init__(**kwargs)
 		# Creamos el hilo del servidor
