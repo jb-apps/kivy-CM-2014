@@ -18,14 +18,16 @@ from kivy.uix.popup import Popup
 from kivy.uix.button import Button
 from kivy.uix.listview import ListView
 from kivy.uix.listview import ListItemButton
+from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.adapters.listadapter import ListAdapter
 from kivy.properties import ObjectProperty, NumericProperty
 from kivy.clock import Clock
+from kivy.event import EventDispatcher
+from kivy.core.window import Window
+
 from math import sqrt
 from random import random
-from kivy.uix.screenmanager import ScreenManager, Screen
 import threading, socket, time, re, time, json
-from kivy.core.window import Window
 
 # esto es un comentario
 
@@ -189,10 +191,20 @@ class PlayDrawerScreen(Screen):
 
 
 	def on_touch_down(self, touch):
+		w, h = Window.system_size
+		if touch.y > h-200:
+			print "antes touch.y=",touch.y
+			touch.y = h-200
+			print "despues touch.y=",touch.y
 		with self.ids.layout_dibujo.canvas:
 			touch.ud['line'] = Line(points=[touch.x, touch.y])
 
 	def on_touch_move(self, touch):
+		w, h = Window.system_size
+		if touch.y > h-200:
+			print "antes touch.y=",touch.y
+			touch.y = h-200
+			print "despues touch.y=",touch.y
 		touch.ud['line'].points += [touch.x, touch.y]
 
 	def on_touch_up(self, touch):
