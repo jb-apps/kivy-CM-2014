@@ -34,6 +34,7 @@ import threading, socket, time, re, time, json
 Builder.load_file('touchtracer.kv')
 sm = ScreenManager()
 id_user = -1 			# lo inicilizamos a un indice no valido en la BD
+drawer = False			# inicializamos el usuario como NO dibujador
 
 """
 	Utilities: Clase de utilidades para las demas clases
@@ -167,14 +168,77 @@ class LoginScreen(Screen):
 
 class PlayViewerScreen(Screen):
 
-	uxSeconds = NumericProperty(30)
+	uxSeconds = NumericProperty(0)
+	sock_server = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
+	server_port = 5006
 	#uxSecondsStr = StringProperty('')
 	def __init__(self, **kwargs):
 		super(PlayViewerScreen, self).__init__(**kwargs)
+		Clock.schedule_interval(self.update_timer, 1)
+		# Creamos el hilo del servidor
+		thread = threading.Thread(target=self.receive_points)
+		thread.start()
+
+	def on_touch_down(self, touch):
+		pass
+
+	def on_touch_move(self, touch):
+		pass
+
+	def on_touch_up(self, touch):
+		pass
+
+	'''
+		Metodos auxiliares de la aplicacion
+	'''
+	# Recepcion de puntos del servidor
+	def receive_points(self):
+		print "console >> Running server..."
+		self.sock_server.bind(('', self.server_port))
+		while 1:
+			try:
+				data, addr = self.sock_server.recvfrom(10240)
+				if len(data) != 0:
+					print "console >> Data received from",addr
+					self.draw_points(data)
+				else:
+					print "console >> Stopping server"
+			except:
+				print "console >> ERROR receiving data"
+				break
+
+	# Parar el servidor de escucha
+	def stop_server(self):
+		self.sock_server.close()
+		# Es necesario despues de cerrar el socket intentar realizar un envio
+		self.send_points('127.0.0.1', self.server_port, '')
+
+	# Envio de puntos al servidor
+	def send_points(self, ip, port, data):
+		sock = socket.socket(socket.AF_INET, # Internet
+				socket.SOCK_DGRAM) # UDP
+		sock.sendto(data, (ip, port))
+
+	# Arrancar servidor
+	def run_server(self):
+		self.sock_server = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
+		thread = threading.Thread(target=self.receive_points)
+		thread.start()
+
+	def draw_points(self, data):
+		p = re.compile('\d+\.\d*')
+		d = p.findall(data)
+
+		# Aseguramos que vamos a recorrer el array esperado y no otro dato
+		#if len(d >= 2):
+		d_float = [float(item) for item in d]
+		print "console >> Drawing points"
+		with self.canvas:
+			Line(points=d_float)
 
 	def update_timer(self, second):
-		if self.uxSeconds >= 0:
-			self.uxSeconds -= 1
+		if self.uxSeconds <= 29:
+			self.uxSeconds += 1
 		#self.uxSecondsStr = str(self.uxSeconds)
 
 	def salir(self):
@@ -182,17 +246,12 @@ class PlayViewerScreen(Screen):
 
 
 class PlayDrawerScreen(Screen):
-	sock_server = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
-	server_port = 5006
 	uxSeconds = NumericProperty(0)
 	#uxSecondsStr = StringProperty('')
 
 	def __init__(self, **kwargs):
 		super(PlayDrawerScreen, self).__init__(**kwargs)
-		# Creamos el hilo del servidor
-		thread = threading.Thread(target=self.receive_points)
-		thread.start()
-
+		Clock.schedule_interval(self.update_timer, 1)
 
 	def on_touch_down(self, touch):
 		w, h = Window.system_size
@@ -215,50 +274,11 @@ class PlayDrawerScreen(Screen):
 	'''
 		Metodos auxiliares de la aplicacion
 	'''
-	# Parar el servidor de escucha
-	def stop_server(self):
-		self.sock_server.close()
-		# Es necesario despues de cerrar el socket intentar realizar un envio
-		self.send_points('127.0.0.1', self.server_port, '')
-
-	# Arrancar servidor
-	def run_server(self):
-		self.sock_server = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
-		thread = threading.Thread(target=self.receive_points)
-		thread.start()
-	
 	# Envio de puntos al servidor
 	def send_points(self, ip, port, data):
 		sock = socket.socket(socket.AF_INET, # Internet
 				socket.SOCK_DGRAM) # UDP
 		sock.sendto(data, (ip, port))
-
-	# Recepcion de puntos del servidor
-	def receive_points(self):
-		print "console >> Running server..."
-		self.sock_server.bind(('', self.server_port))
-		while 1:
-			try:
-				data, addr = self.sock_server.recvfrom(10240)
-				if len(data) != 0:
-					print "console >> Data received from",addr
-					self.draw_points(data)
-				else:
-					print "console >> Stopping server"
-			except:
-				print "console >> ERROR receiving data"
-				break
-
-	def draw_points(self, data):
-		p = re.compile('\d+\.\d*')
-		d = p.findall(data)
-
-		# Aseguramos que vamos a recorrer el array esperado y no otro dato
-		#if len(d >= 2):
-		d_float = [float(item) for item in d]
-		print "console >> Drawing points"
-		with self.canvas:
-			Line(points=d_float)
 	
 	def update_timer(self, second):
 		if self.uxSeconds <= 29:
@@ -285,11 +305,12 @@ class TouchtracerApp(App):
 	icon = 'icon.png'
 
 	def build(self):
-		Clock.schedule_interval(sm.get_screen('playDrawer').update_timer, 1)
 		return sm
 
 	def on_stop(self):
-		sm.get_screen('playDrawer').stop_server()
+		# Paramos el servidor si no somos dibujantes
+		global drawer
+		if not drawer: sm.get_screen('playViewer').stop_server()
 
 if __name__ == '__main__':
 	TouchtracerApp().run()
