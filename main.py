@@ -179,7 +179,7 @@ class PlayDrawerScreen(Screen):
 
 
 	def on_touch_down(self, touch):
-		with self.canvas:
+		with self.ids.layout_dibujo.canvas:
 			touch.ud['line'] = Line(points=[touch.x, touch.y])
 
 	def on_touch_move(self, touch):
