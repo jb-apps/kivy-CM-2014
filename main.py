@@ -254,10 +254,10 @@ class PlayDrawerScreen(Screen):
 					 on_press=self.salir)
 		
 		rootLayout = self.ids.layout_barra_titulo
-		
+		root = self.ids.gridLayout
 		#print "Entra"
 		i=0
-		for child in rootLayout.children:
+		for child in root.children:
 			i+=1
 		print i
 		rootLayout.add_widget(btn,i)
