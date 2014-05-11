@@ -36,8 +36,8 @@ sm = ScreenManager()
 id_user = -1 			# lo inicilizamos a un indice no valido en la BD
 drawer = False			# inicializamos el usuario como NO dibujador
 ip_opponent = '127.0.0.1'
-port_opponent = 5006	# puerto oponente necesario en UserListScreen
-port_own = 5005			# puerto propio necesario en UserListScreen
+port_opponent = 5005	# puerto oponente necesario en UserListScreen
+port_own = 5006			# puerto propio necesario en UserListScreen
 
 """
 	Utilities: Clase de utilidades para las demas clases
@@ -113,6 +113,8 @@ class Utilities():
 	Crear listado de usuarios conectados
 """
 class UserListScreen(Screen):
+
+	sock_server = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
 
 	def __init__(self, **kwargs):
 		super(UserListScreen, self).__init__(**kwargs)
