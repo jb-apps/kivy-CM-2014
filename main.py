@@ -156,8 +156,16 @@ class UserListScreen(Screen):
 				socket.SOCK_DGRAM)				# UDP
 		sock.sendto('sending user', (ip_opponent, port_opponent))
 
+		sock.close()
+		try:
+			sock.sendto('', ('127.0.0.1', port_own))
+		except:
+			print "console >> Stopping server"
+
+
 	def receive_user(self):
 		self.sock_server.bind(('', port_own))
+		print "console >> Running server to receive user"
 		try:
 			data, addr = self.sock_server.recvfrom(1024)
 			if len(data) != 0:
@@ -165,24 +173,20 @@ class UserListScreen(Screen):
 				sm.add_widget(PlayViewerScreen(name='playViewer'))
 				self.manager.current = 'playViewer'
 			else:
-				print "console >> Stopping server"
+				print "console >> No data received. Stopping server"
 		except:
 			print "console >> ERROR connecting with user"
 
+		print "console >> Server stopped"
+
 	def play(self):
-<<<<<<< HEAD
-		#print 'console >> Starting the game',self.list_adapter.selection  # como saber quien esta seleccionado
-		#self.manager.current = 'playDrawer'
-		#print "hola mundo"
-		#self.manager.current = 'playDrawer'
-		self.manager.current = 'playViewer'
-=======
+		print 'console >> Starting the game',self.list_adapter.selection  # como saber quien esta seleccionado
+		#self.manager.current = 'playViewer'
 		self.send_user() # enviar mensaje al oponennte para que juegue
 		global drawer
 		drawer = True
 		sm.add_widget(PlayDrawerScreen(name='playDrawer'))
 		self.manager.current = 'playDrawer'
->>>>>>> bc3988b4e77e7f24b2b32c103e5916a732770fe4
 
 	def back(self):
 		self.manager.current = 'login'
@@ -224,7 +228,6 @@ class LoginScreen(Screen):
 class PlayViewerScreen(Screen):
 	uxSeconds = NumericProperty(0)
 	sock_server = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
-	server_port = 5005
 	#uxSecondsStr = StringProperty('')
 	def __init__(self, **kwargs):
 		super(PlayViewerScreen, self).__init__(**kwargs)
@@ -238,14 +241,19 @@ class PlayViewerScreen(Screen):
 	'''
 	# Recepcion de puntos del servidor
 	def receive_points(self):
-		print "console >> Running server..."
-		self.sock_server.bind(('', self.server_port))
+		print "console >> Running server... port:",port_own+1
+		#time.sleep(5)
+		self.sock_server.bind(('', port_own+1))
 		while 1:
 			try:
 				data, addr = self.sock_server.recvfrom(10240)
 				if len(data) != 0:
-					print "console >> Data received from",addr
-					self.draw_points(data)
+					if data == 'erase':
+						self.canvas.clear()
+						print "console >> Erasing drawing"
+					else:
+						print "console >> Data received from",addr
+						self.draw_points(data)
 				else:
 					print "console >> Stopping server"
 			except:
@@ -256,13 +264,13 @@ class PlayViewerScreen(Screen):
 	def stop_server(self):
 		self.sock_server.close()
 		# Es necesario despues de cerrar el socket intentar realizar un envio
-		self.send_points('127.0.0.1', self.server_port, '')
+		self.send_points('127.0.0.1', port_own+1, '')
 
 	# Envio de puntos al servidor
 	def send_points(self, ip, port, data):
 		sock = socket.socket(socket.AF_INET, # Internet
 				socket.SOCK_DGRAM) # UDP
-		sock.sendto(data, (ip, port))
+		sock.sendto(data, (ip_opponent, port_opponent))
 
 	# Arrancar servidor
 	def run_server(self):
@@ -291,10 +299,6 @@ class PlayViewerScreen(Screen):
 
 	def on_touch_down(self, touch):
 		pass
-<<<<<<< HEAD
-		
-=======
->>>>>>> bc3988b4e77e7f24b2b32c103e5916a732770fe4
 
 	def on_touch_move(self, touch):
 		pass
@@ -357,20 +361,14 @@ class PlayDrawerScreen(Screen):
 	def on_touch_up(self, touch):
 		w, h = Window.system_size
 		h_layout = self.ids.layout_barra_titulo.height
-<<<<<<< HEAD
 		#Si presionamos dentro de los límites del botón Salir => Salimos
-=======
-
->>>>>>> 1ae3df893a86b005b1df533cb3b7362c73c1fa23
 		if (touch.y > h-h_layout) and touch.x < (w*0.20):
 			self.salir()
 		#Si presionamos dentro de los límites del Borrar => Borramos
 		elif (touch.y > h-h_layout) and touch.x > (w*0.80):
 			self.borrarPantalla()
 		elif len(touch.ud['line'].points) > 0:
-			global ip_opponent
-			global port_opponent
-			self.send_points(ip_opponent, port_opponent, str(touch.ud['line'].points))
+			self.send_points(ip_opponent, port_opponent+1, str(touch.ud['line'].points))
 
 	'''
 		Metodos auxiliares de la aplicacion
@@ -379,7 +377,7 @@ class PlayDrawerScreen(Screen):
 	def send_points(self, ip, port, data):
 		sock = socket.socket(socket.AF_INET, # Internet
 				socket.SOCK_DGRAM) # UDP
-		sock.sendto(data, (ip, port_opponent))
+		sock.sendto(data, (ip, port_opponent+1))
 	
 	def update_timer(self, second):
 		if self.uxSeconds <= 29:
@@ -395,7 +393,7 @@ class PlayDrawerScreen(Screen):
 	def borrarPantalla(self):
 		#Window.clear()
 		print "console >> Erasing drawing"
-		self.send_points(ip_opponent, port_opponent, 'erase')
+		self.send_points(ip_opponent, port_opponent+1, 'erase')
 		self.ids.layout_dibujo.canvas.clear()
 		
 
