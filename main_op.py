@@ -72,8 +72,7 @@ class Utilities():
 
 		return data
 
-	def popupCancelarAceptar(self,txt_title,txt_content):
-		res = 0
+	def popupCancelarAceptar(self,txt_title,txt_content, orig, dest):
 		layout = BoxLayout(orientation='vertical')
 		lab = Label(text=txt_content)
 		btnCerrar = Button(text='Cerrar', size_hint=(.5,.2))
@@ -86,11 +85,11 @@ class Utilities():
 		popup = Popup(title=txt_title,content=layout,size_hint=(.8, .5))
 
 		btnCerrar.bind(on_press=popup.dismiss)
-		if btnAceptar.bind(on_press=popup.dismiss):
-			res = 1
+		def go_dest(obj):
+			orig.manager.current = dest
+		btnAceptar.bind(on_press=go_dest, on_release=popup.dismiss)
 		popup.open()
 
-		return res
 
 	def popup(self, txt_title, txt_content):
 		layout = BoxLayout(orientation='vertical')
@@ -181,7 +180,6 @@ class UserListScreen(Screen):
 
 	def play(self):
 		print 'console >> Starting the game',self.list_adapter.selection  # como saber quien esta seleccionado
-		#self.manager.current = 'playViewer'
 		self.send_user() # enviar mensaje al oponennte para que juegue
 		global drawer
 		drawer = True
@@ -249,13 +247,14 @@ class PlayViewerScreen(Screen):
 				data, addr = self.sock_server.recvfrom(10240)
 				if len(data) != 0:
 					if data == 'erase':
-						self.canvas.clear()
+						self.ids.layout_visualizador.canvas.clear()
 						print "console >> Erasing drawing"
 					else:
 						print "console >> Data received from",addr
 						self.draw_points(data)
 				else:
 					print "console >> Stopping server"
+					break
 			except:
 				print "console >> ERROR receiving data"
 				break
@@ -264,7 +263,11 @@ class PlayViewerScreen(Screen):
 	def stop_server(self):
 		self.sock_server.close()
 		# Es necesario despues de cerrar el socket intentar realizar un envio
-		self.send_points('127.0.0.1', port_own+1, '')
+		print "console >> Closing socket",port_own+1
+		try:
+			self.send_points('127.0.0.1', port_own+1, '')
+		except:
+			print "console >> Server stopped"
 
 	# Envio de puntos al servidor
 	def send_points(self, ip, port, data):
@@ -286,7 +289,7 @@ class PlayViewerScreen(Screen):
 		#if len(d >= 2):
 		d_float = [float(item) for item in d]
 		print "console >> Drawing points"
-		with self.canvas:
+		with self.ids.layout_visualizador.canvas:
 			Line(points=d_float)
 
 	def update_timer(self, second):
@@ -295,7 +298,7 @@ class PlayViewerScreen(Screen):
 		#self.uxSecondsStr = str(self.uxSeconds)
 
 	def salir(self):
-		Utilities().popupCancelarAceptar('Warning', '    ¿seguro que desea salir? \n se contará como una perdida')
+		Utilities().popupCancelarAceptar('Warning', '    ¿seguro que desea salir? \n se contará como una perdida', self, 'login')
 
 	def on_touch_down(self, touch):
 		pass
@@ -329,10 +332,10 @@ class PlayViewerScreen(Screen):
 		# Comprobar palabra pressed
 		elif (touch.y > h-h_layout) and touch.x > (w*0.70):
 			print "Comprobar pressed"
+	
 	def salir(self):
 		utility = Utilities()
-		res = utility.popupCancelarAceptar('Warning', '    ¿seguro que desea salir? \n se contará como una perdida')
-		self.manager.current = 'userList'
+		utility.popupCancelarAceptar('Warning', '    ¿seguro que desea salir? \n se contará como una perdida', self, 'userList')
 
 class PlayDrawerScreen(Screen):
 	uxSeconds = NumericProperty(0)
@@ -340,6 +343,9 @@ class PlayDrawerScreen(Screen):
 	def __init__(self, **kwargs):
 		super(PlayDrawerScreen, self).__init__(**kwargs)
 		Clock.schedule_interval(self.update_timer, 1)
+
+	def on_leave(self):
+
 
 	def on_touch_down(self, touch):
 		w, h = Window.system_size
@@ -375,8 +381,8 @@ class PlayDrawerScreen(Screen):
 	'''
 	# Envio de puntos al servidor
 	def send_points(self, ip, port, data):
-		sock = socket.socket(socket.AF_INET, # Internet
-				socket.SOCK_DGRAM) # UDP
+		sock = socket.socket(socket.AF_INET,	# Internet
+				socket.SOCK_DGRAM)				# UDP
 		sock.sendto(data, (ip, port_opponent+1))
 	
 	def update_timer(self, second):
@@ -386,8 +392,7 @@ class PlayDrawerScreen(Screen):
 
 	def salir(self):
 		utility = Utilities()
-		res = utility.popupCancelarAceptar('Warning', '    ¿seguro que desea salir? \n se contará como una perdida')
-		self.manager.current = 'userList'
+		utility.popupCancelarAceptar('Warning', '    ¿seguro que desea salir? \n se contará como una perdida', self, 'userList')
 		#self.remove_screen(self)
 
 	def borrarPantalla(self):
