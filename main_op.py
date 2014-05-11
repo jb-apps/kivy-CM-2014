@@ -36,8 +36,8 @@ sm = ScreenManager()
 id_user = -1 			# lo inicilizamos a un indice no valido en la BD
 drawer = False			# inicializamos el usuario como NO dibujador
 ip_opponent = '127.0.0.1'
-port_opponent = 5006	# puerto oponente necesario en UserListScreen
-port_own = 5005			# puerto propio necesario en UserListScreen
+port_opponent = 5005	# puerto oponente necesario en UserListScreen
+port_own = 5006			# puerto propio necesario en UserListScreen
 
 """
 	Utilities: Clase de utilidades para las demas clases
@@ -114,6 +114,8 @@ class Utilities():
 """
 class UserListScreen(Screen):
 
+	sock_server = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
+
 	def __init__(self, **kwargs):
 		super(UserListScreen, self).__init__(**kwargs)
 		
@@ -168,19 +170,11 @@ class UserListScreen(Screen):
 			print "console >> ERROR connecting with user"
 
 	def play(self):
-<<<<<<< HEAD
-		#print 'console >> Starting the game',self.list_adapter.selection  # como saber quien esta seleccionado
-		#self.manager.current = 'playDrawer'
-		#print "hola mundo"
-		#self.manager.current = 'playDrawer'
-		self.manager.current = 'playViewer'
-=======
 		self.send_user() # enviar mensaje al oponennte para que juegue
 		global drawer
 		drawer = True
 		sm.add_widget(PlayDrawerScreen(name='playDrawer'))
 		self.manager.current = 'playDrawer'
->>>>>>> bc3988b4e77e7f24b2b32c103e5916a732770fe4
 
 	def back(self):
 		self.manager.current = 'login'
@@ -289,44 +283,12 @@ class PlayViewerScreen(Screen):
 
 	def on_touch_down(self, touch):
 		pass
-<<<<<<< HEAD
-		
-=======
->>>>>>> bc3988b4e77e7f24b2b32c103e5916a732770fe4
 
 	def on_touch_move(self, touch):
 		pass
 
 	def on_touch_up(self, touch):
-		w, h = Window.system_size
-		layoutInput = self.ids.layout_textInput
-		textInputWord = self.ids.txt_word
-		h_layout = layoutInput.height
-
-		#TextInput pressed
-		# comprobamos si hemos presionado el TextInput
-		if touch.y > (h-h_layout) and touch.x>w*0.20 and touch.x<w*0.7:
-			#Borramos el antiguo text input
-			layoutInput.clear_widgets()
-
-			#Creamos un nuevo textInput y activamos el teclado
-			textInputWord = TextInput(text='',multiline=False,id='txt_word',
-										focus=True,font_size=self.height*0.05)
-			# añadimos el textInput
-			layoutInput.add_widget(textInputWord)
-
-			print touch.pos, h_layout
-		# salir pressed
-		elif (touch.y > h-h_layout) and touch.x < (w*0.20):
-			#self.salir()
-			print "salir pressed"
-		# Comprobar palabra pressed
-		elif (touch.y > h-h_layout) and touch.x > (w*0.70):
-			print "Comprobar pressed"
-	def salir(self):
-		utility = Utilities()
-		res = utility.popupCancelarAceptar('Warning', '    ¿seguro que desea salir? \n se contará como una perdida')
-		self.manager.current = 'userList'
+		pass
 
 class PlayDrawerScreen(Screen):
 	uxSeconds = NumericProperty(0)
@@ -339,6 +301,14 @@ class PlayDrawerScreen(Screen):
 		w, h = Window.system_size
 		h_layout = self.ids.layout_barra_titulo.height
 
+		#Si presionamos dentro de los límites del botón Salir => Salimos
+		#if (touch.y > h-h_layout) and touch.x < (w*0.20):
+		#	self.salir()
+		#Si presionamos dentro de los límites del Borrar => Borramos
+		#elif (touch.y > h-h_layout) and touch.x > (w*0.80):
+		#	pass
+
+		#else:
 		if touch.y > h-h_layout: 
 			touch.y = h-h_layout
 		with self.ids.layout_dibujo.canvas:
@@ -355,7 +325,6 @@ class PlayDrawerScreen(Screen):
 	def on_touch_up(self, touch):
 		w, h = Window.system_size
 		h_layout = self.ids.layout_barra_titulo.height
-
 		if (touch.y > h-h_layout) and touch.x < (w*0.20):
 			self.salir()
 		elif (touch.y > h-h_layout) and touch.x > (w*0.80):
