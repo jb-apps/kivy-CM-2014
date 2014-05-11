@@ -168,19 +168,18 @@ class UserListScreen(Screen):
 			print "console >> ERROR connecting with user"
 
 	def play(self):
-<<<<<<< HEAD
 		#print 'console >> Starting the game',self.list_adapter.selection  # como saber quien esta seleccionado
 		#self.manager.current = 'playDrawer'
 		#print "hola mundo"
 		#self.manager.current = 'playDrawer'
-		self.manager.current = 'playViewer'
-=======
+		#sm.add_widget(PlayViewerScreen(name='playViewer'))
+		#self.manager.current = 'playViewer'
+		
 		self.send_user() # enviar mensaje al oponennte para que juegue
 		global drawer
 		drawer = True
 		sm.add_widget(PlayDrawerScreen(name='playDrawer'))
 		self.manager.current = 'playDrawer'
->>>>>>> bc3988b4e77e7f24b2b32c103e5916a732770fe4
 
 	def back(self):
 		self.manager.current = 'login'
@@ -289,10 +288,6 @@ class PlayViewerScreen(Screen):
 
 	def on_touch_down(self, touch):
 		pass
-<<<<<<< HEAD
-		
-=======
->>>>>>> bc3988b4e77e7f24b2b32c103e5916a732770fe4
 
 	def on_touch_move(self, touch):
 		pass
