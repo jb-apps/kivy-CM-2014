@@ -114,6 +114,8 @@ class Utilities():
 """
 class UserListScreen(Screen):
 
+	sock_server = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
+
 	def __init__(self, **kwargs):
 		super(UserListScreen, self).__init__(**kwargs)
 		
@@ -299,14 +301,6 @@ class PlayDrawerScreen(Screen):
 		w, h = Window.system_size
 		h_layout = self.ids.layout_barra_titulo.height
 
-		#Si presionamos dentro de los límites del botón Salir => Salimos
-		#if (touch.y > h-h_layout) and touch.x < (w*0.20):
-		#	self.salir()
-		#Si presionamos dentro de los límites del Borrar => Borramos
-		#elif (touch.y > h-h_layout) and touch.x > (w*0.80):
-		#	pass
-
-		#else:
 		if touch.y > h-h_layout: 
 			touch.y = h-h_layout
 		with self.ids.layout_dibujo.canvas:
@@ -323,8 +317,10 @@ class PlayDrawerScreen(Screen):
 	def on_touch_up(self, touch):
 		w, h = Window.system_size
 		h_layout = self.ids.layout_barra_titulo.height
+		#Si presionamos dentro de los límites del botón Salir => Salimos
 		if (touch.y > h-h_layout) and touch.x < (w*0.20):
 			self.salir()
+		#Si presionamos dentro de los límites del Borrar => Borramos
 		elif (touch.y > h-h_layout) and touch.x > (w*0.80):
 			self.borrarPantalla()
 		elif len(touch.ud['line'].points) > 0:
@@ -355,6 +351,7 @@ class PlayDrawerScreen(Screen):
 	def borrarPantalla(self):
 		#Window.clear()
 		print "console >> Erasing drawing"
+		self.send_points(ip_opponent, port_opponent, 'erase')
 		self.ids.layout_dibujo.canvas.clear()
 		
 

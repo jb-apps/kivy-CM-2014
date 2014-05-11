@@ -36,8 +36,8 @@ sm = ScreenManager()
 id_user = -1 			# lo inicilizamos a un indice no valido en la BD
 drawer = False			# inicializamos el usuario como NO dibujador
 ip_opponent = '127.0.0.1'
-port_opponent = 5005	# puerto oponente necesario en UserListScreen
-port_own = 5006			# puerto propio necesario en UserListScreen
+port_opponent = 5006	# puerto oponente necesario en UserListScreen
+port_own = 5005			# puerto propio necesario en UserListScreen
 
 """
 	Utilities: Clase de utilidades para las demas clases
@@ -301,14 +301,6 @@ class PlayDrawerScreen(Screen):
 		w, h = Window.system_size
 		h_layout = self.ids.layout_barra_titulo.height
 
-		#Si presionamos dentro de los límites del botón Salir => Salimos
-		#if (touch.y > h-h_layout) and touch.x < (w*0.20):
-		#	self.salir()
-		#Si presionamos dentro de los límites del Borrar => Borramos
-		#elif (touch.y > h-h_layout) and touch.x > (w*0.80):
-		#	pass
-
-		#else:
 		if touch.y > h-h_layout: 
 			touch.y = h-h_layout
 		with self.ids.layout_dibujo.canvas:
@@ -325,8 +317,10 @@ class PlayDrawerScreen(Screen):
 	def on_touch_up(self, touch):
 		w, h = Window.system_size
 		h_layout = self.ids.layout_barra_titulo.height
+		#Si presionamos dentro de los límites del botón Salir => Salimos
 		if (touch.y > h-h_layout) and touch.x < (w*0.20):
 			self.salir()
+		#Si presionamos dentro de los límites del Borrar => Borramos
 		elif (touch.y > h-h_layout) and touch.x > (w*0.80):
 			self.borrarPantalla()
 		elif len(touch.ud['line'].points) > 0:
@@ -357,6 +351,7 @@ class PlayDrawerScreen(Screen):
 	def borrarPantalla(self):
 		#Window.clear()
 		print "console >> Erasing drawing"
+		self.send_points(ip_opponent, port_opponent, 'erase')
 		self.ids.layout_dibujo.canvas.clear()
 		
 
