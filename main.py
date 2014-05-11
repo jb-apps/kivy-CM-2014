@@ -69,6 +69,25 @@ class Utilities():
 
 		return data
 
+	def popupCancelarAceptar(self,txt_title,txt_content):
+		res = 0
+		layout = BoxLayout(orientation='vertical')
+		lab = Label(text=txt_content)
+		btnCerrar = Button(text='Cerrar', size_hint=(.5,.2))
+		btnAceptar= Button(text='Aceptar', size_hint=(.5,.2))
+		
+		layout.add_widget(lab)
+		layout.add_widget(btnCerrar)
+		layout.add_widget(btnAceptar)
+
+		popup = Popup(title=txt_title,content=layout,size_hint=(.8, .5))
+
+		btnCerrar.bind(on_press=popup.dismiss)
+		if btnAceptar.bind(on_press=popup.dismiss):
+			res = 1
+		popup.open()
+
+		return res
 
 	def popup(self, txt_title, txt_content):
 		layout = BoxLayout(orientation='vertical')
@@ -127,6 +146,7 @@ class UserListScreen(Screen):
 		#self.manager.current = 'playDrawer'
 		#print "hola mundo"
 		self.manager.current = 'playDrawer'
+		#self.manager.current = 'playViewer'
 
 	def back(self):
 		self.manager.current = 'login'
@@ -166,7 +186,6 @@ class LoginScreen(Screen):
 			
 
 class PlayViewerScreen(Screen):
-
 	uxSeconds = NumericProperty(0)
 	sock_server = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
 	server_port = 5006
@@ -177,15 +196,6 @@ class PlayViewerScreen(Screen):
 		# Creamos el hilo del servidor
 		thread = threading.Thread(target=self.receive_points)
 		thread.start()
-
-	def on_touch_down(self, touch):
-		pass
-
-	def on_touch_move(self, touch):
-		pass
-
-	def on_touch_up(self, touch):
-		pass
 
 	'''
 		Metodos auxiliares de la aplicacion
@@ -243,6 +253,14 @@ class PlayViewerScreen(Screen):
 	def salir(self):
 		Utilities().popupCancelarAceptar('Warning', '    ¿seguro que desea salir? \n se contará como una perdida')
 
+#	def on_touch_down(self, touch):
+#		pass
+
+	def on_touch_move(self, touch):
+		pass
+
+	def on_touch_up(self, touch):
+		pass
 
 class PlayDrawerScreen(Screen):
 	uxSeconds = NumericProperty(0)
@@ -250,26 +268,24 @@ class PlayDrawerScreen(Screen):
 	def __init__(self, **kwargs):
 		super(PlayDrawerScreen, self).__init__(**kwargs)
 		Clock.schedule_interval(self.update_timer, 1)
-		btn = Button(text='salir', id='go_out_button', size_hint=(None,1), 
-					 on_press=self.salir)
-		
-		rootLayout = self.ids.layout_barra_titulo
-		root = self.ids.gridLayout
-		#print "Entra"
-		i=0
-		for child in root.children:
-			i+=1
-		print i
-		rootLayout.add_widget(btn,i)
-
 
 	def on_touch_down(self, touch):
 		w, h = Window.system_size
 		h_layout = self.ids.layout_barra_titulo.height
-		if touch.y > h-h_layout: touch.y = h-h_layout
-		
-		with self.ids.layout_dibujo.canvas:
-			touch.ud['line'] = Line(points=[touch.x, touch.y])
+
+		#Si presionamos dentro de los límites del botón Salir => Salimos
+		if (touch.y > h-h_layout) and touch.x < (w*0.20):
+			self.salir()
+		#Si presionamos dentro de los límites del Borrar => Borramos
+		elif (touch.y > h-h_layout) and touch.x > (w*0.80):
+			self.borrarPantalla()
+
+		else:
+			if touch.y > h-h_layout: 
+				touch.y = h-h_layout
+			with self.ids.layout_dibujo.canvas:
+				touch.ud['line'] = Line(points=[touch.x, touch.y])
+			
 
 	def on_touch_move(self, touch):
 		w, h = Window.system_size
@@ -296,9 +312,10 @@ class PlayDrawerScreen(Screen):
 		#self.uxSecondsStr = str(self.uxSeconds)
 
 	def salir(self):
+		utility = Utilities()
+		res = utility.popupCancelarAceptar('Warning', '    ¿seguro que desea salir? \n se contará como una perdida')
 		self.manager.current = 'userList'
-		self.remove_screen(self)
-		pass
+		#self.remove_screen(self)
 
 	def borrarPantalla(self):
 		#Window.clear()

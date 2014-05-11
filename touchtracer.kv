@@ -71,7 +71,7 @@
 
 <PlayViewerScreen>:
 	GridLayout:
-		rows: 2
+		rows: 3
 		spacing: 5
 
 		BoxLayout:
@@ -93,7 +93,6 @@
                 width: root.width*0.20
                 text: 'Salir'
                 on_press: root.salir()
-				
 			Label:
 				size_hint: None, 1
 				width: root.width*0.6
@@ -109,7 +108,6 @@
 					Ellipse:
 		                size: self.height,self.height
 						pos: self.pos
-					
 					Color:
 						rgba: 0, 0, 1, 0.7
 					Ellipse:
@@ -123,8 +121,16 @@
 					Ellipse:
 		                size: self.height*.6,self.height*.6
 						pos:self.x*1.05,self.y*1.025
-
-
+		BoxLayout:
+			size_hint: 1, None
+            height: '55sp'
+			TextInput:
+				id: txt_word
+				font_size: root.height*0.05
+				text:''
+				#size_hint:.6,.1
+				#pos_hint: {'x':.2, 'y':.6}
+				multiline: False
 		BoxLayout:
 			Label:
 				text: 'PlayViewerScreen'
@@ -167,12 +173,12 @@
             size_hint: 1, None
             height: '55sp'
 
-#            Button:
-#            	id: go_out_button
-#                size_hint: None, 1
-#                width: root.width*0.20
-#                text: 'Salir'
-#                on_press: root.salir()
+            Button:
+            	id: go_out_button
+                size_hint: None, 1
+                width: root.width*0.20
+                text: 'Salir'
+                on_press: root.salir()
 
 			Label:
 				size_hint: None, 1
