@@ -75,15 +75,18 @@
 		spacing: 5
 
 		BoxLayout:
+			id: layout_barra_titulo
 			orientation: 'horizontal'
             padding: '2sp'
             spacing: '5sp'
+            
             canvas:
                 Color:
                     rgba: 1, 1, 1, .3
                 Rectangle:
                     size: self.size
                     pos: self.pos
+            
             size_hint: 1, None
             height: '55sp'
 
@@ -92,45 +95,50 @@
                 size_hint: None, 1
                 width: root.width*0.20
                 text: 'Salir'
-                on_press: root.salir()
-			Label:
-				size_hint: None, 1
-				width: root.width*0.6
-				text_size: self.width, None
-				text: 'Visor'
-				haling: 'justify'
-				color: (1, 1, 1, .8)
+                #on_press: root.salir()
 
 			BoxLayout:
-				canvas:
-					Color:
-						rgba: 1, 1, 1,0.8
-					Ellipse:
-		                size: self.height,self.height
-						pos: self.pos
-					Color:
-						rgba: 0, 0, 1, 0.7
-					Ellipse:
-		                size: self.height,self.height
-		                pos: self.pos
-						angle_start: 0
-						angle_end: root.uxSeconds * 6
-
-					Color:
-						rgba: 0, 0, 0, 0.9
-					Ellipse:
-		                size: self.height*.6,self.height*.6
-						pos:self.x*1.05,self.y*1.025
+				id: layout_textInput
+				size_hint: 1, None
+	            height: '55sp'
+				TextInput:
+					id: txt_word
+					font_size: root.height*0.05
+					text:''
+					#size_hint:.6,.1
+					#pos_hint: {'x':.2, 'y':.6}
+					multiline: False
+			Button:
+            	id: comprobar_button
+                size_hint: None, 1
+                width: root.width*0.30
+                text: 'Comprobar'
+                #on_press: root.borrarPantalla()
+		# Temporizador
 		BoxLayout:
 			size_hint: 1, None
             height: '55sp'
-			TextInput:
-				id: txt_word
-				font_size: root.height*0.05
-				text:''
-				#size_hint:.6,.1
-				#pos_hint: {'x':.2, 'y':.6}
-				multiline: False
+			canvas:
+				Color:
+					rgba: 1, 1, 1,0.8
+				Ellipse:
+	                size: self.height,self.height
+					pos: self.pos
+				
+				Color:
+					rgba: 0, 0, 1, 0.7
+				Ellipse:
+	                size: self.height,self.height
+	                pos: self.pos
+					angle_start: 0
+					angle_end: root.uxSeconds * 12
+
+#				Color:
+#					rgba: 0, 0, 0, 0.9
+#				Ellipse:
+#	                size: self.height*.6,self.height*.6
+#					pos:self.x*1.05,self.y*1.025
+
 		BoxLayout:
 			Label:
 				text: 'PlayViewerScreen'
@@ -210,11 +218,6 @@
 					Ellipse:
 		                size: self.height*.6,self.height*.6
 						pos:self.x*1.05,self.y*1.025
-
-				#Label:
-					#text: root.uxSecondsStr
-					#font_size: 10
-					#pos: self.x*1.10,self.y*1.075
 		                
 		    Button:
             	id: clear_button
