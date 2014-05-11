@@ -35,6 +35,8 @@ Builder.load_file('touchtracer.kv')
 sm = ScreenManager()
 id_user = -1 			# lo inicilizamos a un indice no valido en la BD
 drawer = False			# inicializamos el usuario como NO dibujador
+ip_opponent = '127.0.0.1'
+port_opponent = 5005
 
 """
 	Utilities: Clase de utilidades para las demas clases
@@ -188,7 +190,7 @@ class LoginScreen(Screen):
 class PlayViewerScreen(Screen):
 	uxSeconds = NumericProperty(0)
 	sock_server = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
-	server_port = 5006
+	server_port = 5005
 	#uxSecondsStr = StringProperty('')
 	def __init__(self, **kwargs):
 		super(PlayViewerScreen, self).__init__(**kwargs)
@@ -274,17 +276,17 @@ class PlayDrawerScreen(Screen):
 		h_layout = self.ids.layout_barra_titulo.height
 
 		#Si presionamos dentro de los límites del botón Salir => Salimos
-		if (touch.y > h-h_layout) and touch.x < (w*0.20):
-			self.salir()
+		#if (touch.y > h-h_layout) and touch.x < (w*0.20):
+		#	self.salir()
 		#Si presionamos dentro de los límites del Borrar => Borramos
-		elif (touch.y > h-h_layout) and touch.x > (w*0.80):
-			self.borrarPantalla()
+		#elif (touch.y > h-h_layout) and touch.x > (w*0.80):
+		#	pass
 
-		else:
-			if touch.y > h-h_layout: 
-				touch.y = h-h_layout
-			with self.ids.layout_dibujo.canvas:
-				touch.ud['line'] = Line(points=[touch.x, touch.y])
+		#else:
+		if touch.y > h-h_layout: 
+			touch.y = h-h_layout
+		with self.ids.layout_dibujo.canvas:
+			touch.ud['line'] = Line(points=[touch.x, touch.y])
 			
 
 	def on_touch_move(self, touch):
@@ -295,7 +297,16 @@ class PlayDrawerScreen(Screen):
 		touch.ud['line'].points += [touch.x, touch.y]
 
 	def on_touch_up(self, touch):
-		self.send_points('127.0.0.1', 5005, str(touch.ud['line'].points))
+		w, h = Window.system_size
+		h_layout = self.ids.layout_barra_titulo.height
+		if (touch.y > h-h_layout) and touch.x < (w*0.20):
+			self.salir()
+		elif (touch.y > h-h_layout) and touch.x > (w*0.80):
+			self.borrarPantalla()
+		elif len(touch.ud['line'].points) > 0:
+			global ip_opponent
+			global port_opponent
+			self.send_points(ip_opponent, port_opponent, str(touch.ud['line'].points))
 
 	'''
 		Metodos auxiliares de la aplicacion
