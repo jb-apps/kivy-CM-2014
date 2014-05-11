@@ -9,8 +9,7 @@
 			pos_hint: {'x':.3, 'y':.7}
 			multiline: True
 			text: 'Ingrese nombre de usuario'
-
-		
+			
 		TextInput:
             id: txt_userLogin
 			font_size: root.height*0.05
@@ -71,7 +70,7 @@
 
 <PlayViewerScreen>:
 	GridLayout:
-		rows: 3
+		rows: 2
 		spacing: 5
 
 		BoxLayout:
@@ -142,15 +141,6 @@
 		BoxLayout:
 			Label:
 				text: 'PlayViewerScreen'
-			#Widget:
-			#BoxLayout:
-			#	id:layout_dibujo
-			#	canvas:
-			#		Color:
-			#			rgb: 1, 1, 1
-					#Rectangle:
-					#	source: 'data/images/background.jpg'
-					#	size: self.size
 
 <PlayDrawerScreen>:
 	GridLayout:
