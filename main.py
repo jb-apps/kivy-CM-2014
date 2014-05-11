@@ -87,6 +87,7 @@ class Utilities():
 		btnCerrar.bind(on_press=popup.dismiss)
 		def go_dest(obj):
 			orig.manager.current = dest
+			
 		btnAceptar.bind(on_press=go_dest, on_release=popup.dismiss)
 		popup.open()
 
