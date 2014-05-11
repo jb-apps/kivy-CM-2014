@@ -345,7 +345,7 @@ class PlayDrawerScreen(Screen):
 		Clock.schedule_interval(self.update_timer, 1)
 
 	def on_leave(self):
-
+		pass
 
 	def on_touch_down(self, touch):
 		w, h = Window.system_size
