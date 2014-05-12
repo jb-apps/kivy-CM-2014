@@ -38,6 +38,7 @@ drawer = False			# inicializamos el usuario como NO dibujador
 ip_opponent = '127.0.0.1'
 port_opponent = 5005	# puerto oponente necesario en UserListScreen
 port_own = 5006			# puerto propio necesario en UserListScreen
+word = 'casa'			# palabra a adivinar
 
 """
 	Utilities: Clase de utilidades para las demas clases
@@ -108,6 +109,16 @@ class Utilities():
 		btn.bind(on_press=popup.dismiss)
 		popup.open()
 
+	def stop_server(self, sock, port):
+		sock.sendto('', ('127.0.0.1', port))
+		sock.close()
+		# Es necesario despues de cerrar el socket intentar realizar un envio
+		print "console >> Closing socket with Utilities", port
+		try:
+			sock.sendto('', ('127.0.0.1', port))
+		except:
+			print "console >> Server stopped with Utilities"
+
 """
 	Crear listado de usuarios conectados
 """
@@ -150,16 +161,20 @@ class UserListScreen(Screen):
 		layout = self.ids.lst_user
 		layout.add_widget(list_view)
 
+	def on_leave(self):
+		utilities = Utilities()
+		utilities.stop_server(self.sock_server, port_own)
+
 	def send_user(self):
 		sock = socket.socket(socket.AF_INET,	# Internet
 				socket.SOCK_DGRAM)				# UDP
 		sock.sendto('sending user', (ip_opponent, port_opponent))
 
-		sock.close()
+		'''sock.close()
 		try:
 			sock.sendto('', ('127.0.0.1', port_own))
 		except:
-			print "console >> Stopping server"
+			print "console >> Stopping server"'''
 
 
 	def receive_user(self):
@@ -229,19 +244,25 @@ class PlayViewerScreen(Screen):
 	#uxSecondsStr = StringProperty('')
 	def __init__(self, **kwargs):
 		super(PlayViewerScreen, self).__init__(**kwargs)
-		Clock.schedule_interval(self.update_timer, 1)
+
 		# Creamos el hilo del servidor
 		thread = threading.Thread(target=self.receive_points)
 		thread.start()
+
+		time.sleep(1)
+		Clock.schedule_interval(self.update_timer, 1)
+
+	def on_leave(self):
+		self.stop_server
 
 	'''
 		Metodos auxiliares de la aplicacion
 	'''
 	# Recepcion de puntos del servidor
 	def receive_points(self):
-		print "console >> Running server... port:",port_own+1
+		print "console >> Running server... port:", port_own+10
 		#time.sleep(5)
-		self.sock_server.bind(('', port_own+1))
+		self.sock_server.bind(('', port_own+10))
 		while 1:
 			try:
 				data, addr = self.sock_server.recvfrom(10240)
@@ -249,8 +270,18 @@ class PlayViewerScreen(Screen):
 					if data == 'erase':
 						self.ids.layout_visualizador.canvas.clear()
 						print "console >> Erasing drawing"
+					elif data == 'exit':
+						utilities = Utilities()
+						utilities.popup('Fin de juego', 'Se ha acabado el juego')
+						print "console >> End of game"
+						self.manager.current = 'userList'
+						break
+					elif data[0] == ':':
+						global word
+						word = data[1:]
+						print "console >> Try:", word
 					else:
-						print "console >> Data received from",addr
+						print "console >> Data received from", addr, " - ", data
 						self.draw_points(data)
 				else:
 					print "console >> Stopping server"
@@ -261,11 +292,12 @@ class PlayViewerScreen(Screen):
 
 	# Parar el servidor de escucha
 	def stop_server(self):
+		self.sock_server.sendto('', ('127.0.0.1', port_own+10))
 		self.sock_server.close()
 		# Es necesario despues de cerrar el socket intentar realizar un envio
-		print "console >> Closing socket",port_own+1
+		print "console >> Closing socket", port_own+10
 		try:
-			self.send_points('127.0.0.1', port_own+1, '')
+			self.sock_server.sendto('', ('127.0.0.1', port_own+10))
 		except:
 			print "console >> Server stopped"
 
@@ -300,6 +332,23 @@ class PlayViewerScreen(Screen):
 	def salir(self):
 		Utilities().popupCancelarAceptar('Warning', '    ¿seguro que desea salir? \n se contará como una perdida', self, 'login')
 
+	def comprobar_palabra(self):
+		txt_word = self.ids.txt_word.text
+		global word
+		print "console >> Comprove that", txt_word,"=",word
+		if txt_word == word:
+			self.ids.lab_resultado.text = 'Correcto'
+			#self.score_me
+		else:
+			self.ids.lab_resultado.text = 'Incorrecto'
+		
+		time.sleep(1)
+		self.on_leave()
+
+
+	def score_me(self):
+		pass
+
 	def on_touch_down(self, touch):
 		pass
 
@@ -331,7 +380,7 @@ class PlayViewerScreen(Screen):
 			print "salir pressed"
 		# Comprobar palabra pressed
 		elif (touch.y > h-h_layout) and touch.x > (w*0.70):
-			print "Comprobar pressed"
+			self.comprobar_palabra()
 	
 	def salir(self):
 		utility = Utilities()
@@ -342,10 +391,17 @@ class PlayDrawerScreen(Screen):
 	#uxSecondsStr = StringProperty('')
 	def __init__(self, **kwargs):
 		super(PlayDrawerScreen, self).__init__(**kwargs)
+		
+
+		lab = Label(text=word)
+		self.add_widget(lab)
+
+		time.sleep(1)
+		self.send_points(ip_opponent, port_opponent+10, ':'+word)
 		Clock.schedule_interval(self.update_timer, 1)
 
 	def on_leave(self):
-		pass
+		self.send_points(ip_opponent, port_opponent+10, 'exit')
 
 	def on_touch_down(self, touch):
 		w, h = Window.system_size
@@ -374,7 +430,7 @@ class PlayDrawerScreen(Screen):
 		elif (touch.y > h-h_layout) and touch.x > (w*0.80):
 			self.borrarPantalla()
 		elif len(touch.ud['line'].points) > 0:
-			self.send_points(ip_opponent, port_opponent+1, str(touch.ud['line'].points))
+			self.send_points(ip_opponent, port_opponent+10, str(touch.ud['line'].points))
 
 	'''
 		Metodos auxiliares de la aplicacion
@@ -383,11 +439,13 @@ class PlayDrawerScreen(Screen):
 	def send_points(self, ip, port, data):
 		sock = socket.socket(socket.AF_INET,	# Internet
 				socket.SOCK_DGRAM)				# UDP
-		sock.sendto(data, (ip, port_opponent+1))
+		sock.sendto(data, (ip, port_opponent+10))
 	
 	def update_timer(self, second):
 		if self.uxSeconds <= 29:
 			self.uxSeconds += 1
+		else:
+			self.on_leave()
 		#self.uxSecondsStr = str(self.uxSeconds)
 
 	def salir(self):
@@ -398,7 +456,7 @@ class PlayDrawerScreen(Screen):
 	def borrarPantalla(self):
 		#Window.clear()
 		print "console >> Erasing drawing"
-		self.send_points(ip_opponent, port_opponent+1, 'erase')
+		self.send_points(ip_opponent, port_opponent+10, 'erase')
 		self.ids.layout_dibujo.canvas.clear()
 		
 

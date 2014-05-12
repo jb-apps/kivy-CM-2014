@@ -113,7 +113,7 @@
                 size_hint: None, 1
                 width: root.width*0.30
                 text: 'Comprobar'
-                #on_press: root.borrarPantalla()
+                on_press: root.comprobar_palabra()
 		# Temporizador
 		BoxLayout:
 			size_hint: 1, None
@@ -140,8 +140,9 @@
 #					pos:self.x*1.05,self.y*1.025
 
 		BoxLayout:
-			#Label:
-			#	text: 'PlayViewerScreen'
+			Label:
+				id: lab_resultado
+				text: ''
 			Widget:
 			BoxLayout:
 				id:layout_visualizador
