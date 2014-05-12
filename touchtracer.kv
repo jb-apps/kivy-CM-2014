@@ -9,8 +9,7 @@
 			pos_hint: {'x':.3, 'y':.7}
 			multiline: True
 			text: 'Ingrese nombre de usuario'
-
-		
+			
 		TextInput:
             id: txt_userLogin
 			font_size: root.height*0.05
@@ -71,7 +70,7 @@
 
 <PlayViewerScreen>:
 	GridLayout:
-		rows: 3
+		rows: 2
 		spacing: 5
 
 		BoxLayout:
@@ -141,8 +140,14 @@
 
 		BoxLayout:
 			Label:
+<<<<<<< HEAD
 				id: lab_resultado
 				text: ''
+=======
+				text: 'PlayViewerScreen'
+			#Label:
+			#	text: 'PlayViewerScreen'
+>>>>>>> 2611ebcadea64de59d408287761b905bcd173c59
 			Widget:
 			BoxLayout:
 				id:layout_visualizador
