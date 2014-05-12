@@ -330,8 +330,10 @@ class PlayViewerScreen(Screen):
 			self.uxSeconds += 1
 		#self.uxSecondsStr = str(self.uxSeconds)
 
-	def salir(self):
-		Utilities().popupCancelarAceptar('Warning', '    ¿seguro que desea salir? \n se contará como una perdida', self, 'login')
+	def salir_viewer(self):
+		#Utilities().popupCancelarAceptar('Warning', '    ¿seguro que desea salir? \n se contará como una perdida', self, 'login')
+		utilities = Utilities()
+		utilities.popup('Funcion no disponible', 'En esta version del juego, solo el Drawer puede cerrar la conexion con el Viewer.')
 
 	def comprobar_palabra(self):
 		t_word = str(self.ids.txt_word.text)
@@ -384,8 +386,7 @@ class PlayViewerScreen(Screen):
 			print touch.pos, h_layout
 		# salir pressed
 		elif (touch.y > h-h_layout) and touch.x < (w*0.20):
-			#self.salir()
-			print "salir pressed"
+			self.salir()
 		# Comprobar palabra pressed
 		elif (touch.y > h-h_layout) and touch.x > (w*0.70):
 			self.comprobar_palabra()
