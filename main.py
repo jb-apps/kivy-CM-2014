@@ -334,17 +334,24 @@ class PlayViewerScreen(Screen):
 		Utilities().popupCancelarAceptar('Warning', '    ¿seguro que desea salir? \n se contará como una perdida', self, 'login')
 
 	def comprobar_palabra(self):
-		txt_word = self.ids.txt_word.text
+		t_word = str(self.ids.txt_word.text)
 		global word
-		print "console >> Comprove that", txt_word,"=",word
-		if txt_word == word:
+		print "console >> Comprove that", t_word,"=",word
+		if t_word == '':
+			pass
+		elif t_word == word:
 			self.ids.lab_resultado.text = 'Correcto'
+			utilities = Utilities()
+			utilities.popup('Enhorabuena','Has ganado el juego')
+
+			time.sleep(1)
+			self.on_leave()
 			#self.score_me
 		else:
 			self.ids.lab_resultado.text = 'Incorrecto'
-		
-		time.sleep(1)
-		self.on_leave()
+
+			time.sleep(1)
+			self.on_leave()
 
 
 	def score_me(self):
