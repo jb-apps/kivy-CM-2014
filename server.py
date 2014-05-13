@@ -69,6 +69,19 @@ def getOnlineUser(id_user):
 	else:
 		return dic
 
+def putPoint(id_user, punctuation, id_connection):
+	ret = False
+	try:
+		cursor = DB.cursor()
+		cursor.execute("INSERT INTO punctuation VALUES ('', %s, %s, %s)", (punctuation, id_user, id_connection))
+		cursor.close()
+		DB.commit()
+		ret = True
+	except Exception, e:
+		ret = False
+
+	return ret
+
 def process_action (action, data):
 
 	if action == "INIT_SESSION":
@@ -93,9 +106,18 @@ def process_action (action, data):
 			response = make_response("ERROR",{})
 			conn.send(response) # echo
 
+	elif action == "PUT_POINT":
+		print "User with id_user = ", data["id_user"], "PUT_POINT"
+		res = putPoint(data["id_user"], data["punctuation"], data["id_connection"])
+		if res:
+			response = make_response("OK",{})
+			conn.send(response)
+		else:
+			response = make_response("ERROR",{})
+			conn.send(response) # echo
+
 	elif action == "":
 		pass
-
 
 while 1:
 	data = conn.recv(BUFFER_SIZE)
