@@ -392,10 +392,9 @@ class PlayViewerScreen(Screen):
 	def on_touch_up(self, touch):
 		w, h = Window.system_size
 		layoutInput = self.ids.layout_textInput
-		textInputWord = self.ids.txt_word
 		h_layout = layoutInput.height
-
-		#TextInput pressed
+		
+		#TextInput pressed dis
 		# comprobamos si hemos presionado el TextInput
 		if touch.y > (h-h_layout) and touch.x>w*0.20 and touch.x<w*0.7:
 			#Borramos el antiguo text input
