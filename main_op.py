@@ -5,6 +5,7 @@ from kivy.config import Config
 Config.set('graphics', 'width', '320')
 Config.set('graphics', 'height', '480')
 
+from kivy.uix.image import Image
 from kivy.app import App
 from kivy.lang import Builder
 from kivy.graphics import Color, Rectangle, Point, GraphicException, Ellipse, Line
@@ -38,7 +39,7 @@ drawer = False			# inicializamos el usuario como NO dibujador
 ip_opponent = '127.0.0.1'
 port_opponent = 5005	# puerto oponente necesario en UserListScreen
 port_own = 5006			# puerto propio necesario en UserListScreen
-word = 'casa'			# palabra a adivinar
+word = ''			# palabra a adivinar
 
 """
 	Utilities: Clase de utilidades para las demas clases
@@ -76,12 +77,17 @@ class Utilities():
 	def popupCancelarAceptar(self,txt_title,txt_content, orig, dest):
 		layout = BoxLayout(orientation='vertical')
 		lab = Label(text=txt_content)
-		btnCerrar = Button(text='Cerrar', size_hint=(.5,.2))
-		btnAceptar= Button(text='Aceptar', size_hint=(.5,.2))
+
+		boxlayout = BoxLayout(orientation='horizontal', size_hint= (1, None), height='45sp', spacing='5sp')
+
+		btnCerrar = Button(text='Cerrar')#, size_hint=(.5,.2))
+		btnAceptar= Button(text='Aceptar')#, size_hint=(.5,.2))
 		
 		layout.add_widget(lab)
-		layout.add_widget(btnCerrar)
-		layout.add_widget(btnAceptar)
+		boxlayout.add_widget(btnCerrar)
+		boxlayout.add_widget(btnAceptar)
+
+		layout.add_widget(boxlayout)
 
 		popup = Popup(title=txt_title,content=layout,size_hint=(.8, .5))
 
@@ -131,6 +137,7 @@ class UserListScreen(Screen):
 
 	def __init__(self, **kwargs):
 		super(UserListScreen, self).__init__(**kwargs)
+		w, h = Window.system_size
 		
 		utilities = Utilities()
 
@@ -144,8 +151,10 @@ class UserListScreen(Screen):
 		self.list_item_args_converter = \
 			lambda row_index, obj: {'text': '[b]'+obj+'[/b] ---- Ptos: ' + str(self.js_response['data'][obj]),
                                     'size_hint_y': None,
+                                    'height': h*0.2,
+                                    'size_hint_x': .8,
                                     'selected_color': [.5,.5,.5,1],
-                                    'deselected_color': [.3,.3,.3,1],
+                                    'deselected_color': [.4, .6, .6, 1],
                                     'markup': True}
 		print self.list_item_args_converter
 		
@@ -416,7 +425,7 @@ class PlayDrawerScreen(Screen):
 	#uxSecondsStr = StringProperty('')
 	def __init__(self, **kwargs):
 		super(PlayDrawerScreen, self).__init__(**kwargs)
-		
+
 		lab = Label(text=word)
 		self.add_widget(lab)
 

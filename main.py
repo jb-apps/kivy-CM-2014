@@ -173,6 +173,19 @@ class UserListScreen(Screen):
 		layout = self.ids.lst_user
 		layout.add_widget(list_view)
 
+	def on_pre_enter(self):
+		self.get_word()
+
+	"""
+		Metodos auxiliares
+	"""
+
+	def get_word(self):
+		req = json.loads(Utilities().send_message('{"action" : "GET_WORD", "data" : { "id_user" : "'+str(id_user)+'"}}'))
+		global word
+		word = req['data']['word']
+		print 'console >> Word downloaded,', word
+
 	def send_user(self):
 		sock = socket.socket(socket.AF_INET,	# Internet
 				socket.SOCK_DGRAM)				# UDP
