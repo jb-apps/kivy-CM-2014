@@ -38,7 +38,7 @@ drawer = False			# inicializamos el usuario como NO dibujador
 ip_opponent = '127.0.0.1'
 port_opponent = 5005	# puerto oponente necesario en UserListScreen
 port_own = 5006			# puerto propio necesario en UserListScreen
-word = ''			# palabra a adivinar
+word = 'casa'			# palabra a adivinar
 
 """
 	Utilities: Clase de utilidades para las demas clases
@@ -314,11 +314,12 @@ class PlayViewerScreen(Screen):
 
 	# Parar el servidor de escucha
 	def stop_server(self):
-		self.sock_server.sendto('', ('127.0.0.1', port_own+10))
-		self.sock_server.close()
-		# Es necesario despues de cerrar el socket intentar realizar un envio
-		print "console >> Closing socket", port_own+10
 		try:
+			self.sock_server.sendto('', ('127.0.0.1', port_own+10))
+			self.sock_server.close()
+			# Es necesario despues de cerrar el socket intentar realizar un envio
+			print "console >> Closing socket", port_own+10
+		
 			self.sock_server.sendto('', ('127.0.0.1', port_own+10))
 		except:
 			print "console >> Server stopped"
@@ -515,7 +516,8 @@ class TouchtracerApp(App):
 		print 'console >>', len(sm.screens), 'screens to close'
 		global drawer
 		if not drawer and sm.has_screen('playViewer'): sm.get_screen('playViewer').stop_server()
-		if sm.has_screen('userList'): sm.get_screen('userList').stop_server()
+		if sm.has_screen('userList'):
+			sm.get_screen('userList').stop_server()
 
 if __name__ == '__main__':
 	sm = ScreenManager()
