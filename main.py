@@ -245,6 +245,7 @@ class LoginScreen(Screen):
 	# Gestiona el nombre de usuario al loguearse
 	def user_login(self):
 		username = self.ids.txt_userLogin.text
+		Window.release_all_keyboards() 
 		utilities = Utilities()
 		if len(username) != 0:
 			server_response = utilities.send_message('{"action":"INIT_SESSION", "data":{"username":"'+str(username)+'"}}')
@@ -379,6 +380,7 @@ class PlayViewerScreen(Screen):
 
 	def comprobar_palabra(self):
 		t_word = str(self.ids.txt_word.text)
+		print "la palabra: ", t_word
 		global word
 		print "console >> Comprove that", t_word,"=",word
 		if t_word == '':
@@ -413,10 +415,9 @@ class PlayViewerScreen(Screen):
 			layoutInput.clear_widgets()
 
 			#Creamos un nuevo textInput y activamos el teclado
-			textInputWord = TextInput(text='',multiline=False,id='txt_word',
-										focus=True,font_size=self.height*0.05)
+			newInput = TextInput(text='',multiline=False,id='txt_word',focus='True', font_size=self.height*0.05,allow_copy='True')
 			# añadimos el textInput
-			layoutInput.add_widget(textInputWord)
+			layoutInput.add_widget(newInput)
 
 			print touch.pos, h_layout
 		# salir pressed
