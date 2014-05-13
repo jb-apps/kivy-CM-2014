@@ -437,6 +437,8 @@ class PlayViewerScreen(Screen):
 
 	def borrar_pantalla(self):
 		self.ids.layout_visualizador.canvas.clear()
+		self.ids.lab_resultado.text = ''
+		self.ids.txt_word.text = ''
 
 class PlayDrawerScreen(Screen):
 	flag = True
@@ -449,12 +451,12 @@ class PlayDrawerScreen(Screen):
 		thread = threading.Thread(target=self.receive_user_match)
 		thread.start()
 
-		lab = Label(text=word)
-		self.add_widget(lab)
-
 		#Clock.schedule_interval(self.update_timer, 1)
 
 	def on_pre_enter(self):
+		self.lab = Label(text=word)
+		self.add_widget(self.lab)
+
 		self.uxSeconds = 0
 		if not self.flag: self.flag = True
 		time.sleep(1)
@@ -562,6 +564,7 @@ class PlayDrawerScreen(Screen):
 		print "console >> Erasing drawing"
 		self.send_points(ip_opponent, port_opponent+10, 'erase')
 		self.ids.layout_dibujo.canvas.clear()
+		self.remove_widget(self.lab)
 
 	# Parar el servidor de escucha. Solo debe ser llamado cuando se detenga la App
 	def stop_server(self):
