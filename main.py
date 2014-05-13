@@ -39,7 +39,7 @@ drawer = False			# inicializamos el usuario como NO dibujador
 ip_opponent = '127.0.0.1'
 port_opponent = 5006	# puerto oponente necesario en UserListScreen
 port_own = 5005			# puerto propio necesario en UserListScreen
-word = 'casa'			# palabra a adivinar
+word = ''			# palabra a adivinar
 
 """
 	Utilities: Clase de utilidades para las demas clases
