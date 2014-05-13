@@ -1,4 +1,4 @@
-import socket,sys
+import socket,sys,random
 import json
 import MySQLdb
 
@@ -52,7 +52,7 @@ def getPunctuation(id_user):
 	punctuation = cursor.fetchall()
 	ret = 0
 	for point in punctuation:
-		ret += point
+		ret += int(point[0])
 	return ret
 
 def getOnlineUser(id_user):
@@ -69,11 +69,36 @@ def getOnlineUser(id_user):
 	else:
 		return dic
 
+def getWord(id_user):
+	cursor = DB.cursor()
+	cursor.execute("SELECT word FROM word")		
+	words = cursor.fetchall()
+	DB.commit()
+	ret = ""
+	random_i = random.randrange(1, len(words))
+	if words:
+		return words[random_i][0]
+	else:
+		return ret
+
 def putPoint(id_user, punctuation, id_connection):
 	ret = False
 	try:
 		cursor = DB.cursor()
-		cursor.execute("INSERT INTO punctuation VALUES ('', %s, %s, %s)", (punctuation, id_user, id_connection))
+		cursor.execute("INSERT INTO punctuation VALUES ('', %s, %s, %s)", (punctuation, id_user, id_connection,))
+		cursor.close()
+		DB.commit()
+		ret = True
+	except Exception, e:
+		ret = False
+
+	return ret
+
+def putUserOffline(id_user):
+	ret = False
+	try:
+		cursor = DB.cursor()
+		cursor.execute("UPDATE user SET online = 0 WHERE id_user = %s" , (id_user,))
 		cursor.close()
 		DB.commit()
 		ret = True
@@ -116,8 +141,29 @@ def process_action (action, data):
 			response = make_response("ERROR",{})
 			conn.send(response) # echo
 
+	elif action == "PUT_USER_OFFLINE":
+		print "User with id_user = ", data["id_user"], "PUT_USER_OFFLINE"
+		res = putUserOffline(data["id_user"])
+		if res:
+			response = make_response("OK",{})
+			conn.send(response)
+		else:
+			response = make_response("ERROR",{})
+			conn.send(response) # echo
+
+	elif action == "GET_WORD":
+		print "User with id_user = ", data["id_user"], "GET_WORD"
+		res = getWord(data["id_user"])
+		if res:
+			response = make_response("OK",{"word":res})
+			conn.send(response)
+		else:
+			response = make_response("ERROR",{})
+			conn.send(response) # echo
+
 	elif action == "":
 		pass
+
 
 while 1:
 	data = conn.recv(BUFFER_SIZE)
