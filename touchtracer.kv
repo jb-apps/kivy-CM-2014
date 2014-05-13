@@ -3,31 +3,32 @@
 
 <LoginScreen>:
 	GridLayout:
+		canvas:
+			Color:
+				rgba: .5, .7, .7, 1
+			Rectangle:
+				size:self.size
+				pos:self.pos
 		rows:2
 		BoxLayout:
+			orientation: 'horizontal'
 			size_hint_y: None
-            canvas:
-                Color:
-                    rgba: .5, .7, .7, 1
-                Rectangle:
-                    size: self.size
-                    pos: self.pos
             size_hint: 1, None
-            height: '55sp'
+            height: '85sp'
+			
 	        Label:
 	        	text:'ETSII'
+	        	font_size: '25sp'
 				size_hint: None, 1
 				size_hint_x:None
-				width:root.width*0.25
-	
+				width:root.width*0.75
+			AsyncImage:
+
+				source: 'http://www.informatica.us.es/docs/25aniversario/logo25aniv.jpg'
+				pos:self.pos	
 		FloatLayout:
-			canvas:
-	            Color:
-	                rgba: .5, .7, .7, 1
-	            Rectangle:
-	                size:self.size
 			Label:
-				font_size: root.height*0.05
+				font_size: '30sp'
 				size_hint: .4,.1
 				pos_hint: {'x':.3, 'y':.7}
 				multiline: True

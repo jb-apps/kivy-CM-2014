@@ -5,6 +5,7 @@ from kivy.config import Config
 Config.set('graphics', 'width', '320')
 Config.set('graphics', 'height', '480')
 
+from kivy.uix.image import Image
 from kivy.app import App
 from kivy.lang import Builder
 from kivy.graphics import Color, Rectangle, Point, GraphicException, Ellipse, Line
@@ -136,6 +137,7 @@ class UserListScreen(Screen):
 
 	def __init__(self, **kwargs):
 		super(UserListScreen, self).__init__(**kwargs)
+		w, h = Window.system_size
 		
 		utilities = Utilities()
 
@@ -149,10 +151,10 @@ class UserListScreen(Screen):
 		self.list_item_args_converter = \
 			lambda row_index, obj: {'text': '[b]'+obj+'[/b] ---- Ptos: ' + str(self.js_response['data'][obj]),
                                     'size_hint_y': None,
+                                    'height': h*0.2,
                                     'size_hint_x': .8,
-                                    'background_color': [.4, .6, .6, 1],
                                     'selected_color': [.5,.5,.5,1],
-                                    'deselected_color': [.3,.3,.3,1],
+                                    'deselected_color': [.4, .6, .6, 1],
                                     'markup': True}
 		print self.list_item_args_converter
 		
