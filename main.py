@@ -416,7 +416,7 @@ class PlayDrawerScreen(Screen):
 	#uxSecondsStr = StringProperty('')
 	def __init__(self, **kwargs):
 		super(PlayDrawerScreen, self).__init__(**kwargs)
-		
+
 		lab = Label(text=word)
 		self.add_widget(lab)
 
