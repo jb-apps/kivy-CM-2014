@@ -384,7 +384,7 @@ class PlayViewerScreen(Screen):
 		#self.uxSecondsStr = str(self.uxSeconds)
 
 	def comprobar_palabra(self):
-		t_word = str(self.ids.txt_word.text)
+		t_word = str(self.ids.txt_word.text).upper()
 		print "la palabra: ", t_word
 		global word
 		print "console >> Comprove that", t_word,"=",word
@@ -418,8 +418,6 @@ class PlayViewerScreen(Screen):
 		# comprobamos si hemos presionado el TextInput
 		if touch.y > (h-h_layout) and touch.x>w*0.20 and touch.x<w*0.7:
 			self.ids.txt_word.focus = True
-
-			print touch.pos, h_layout
 		# salir pressed
 		elif (touch.y > h-h_layout) and touch.x < (w*0.20):
 			self.ids.txt_word.focus = False
