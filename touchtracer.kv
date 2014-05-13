@@ -10,21 +10,15 @@
 				size:self.size
 				pos:self.pos
 		rows:2
+		spacing: '10sp'
 		BoxLayout:
-			orientation: 'horizontal'
+			orientation: 'vertical'
+			padding: '10sp'
 			size_hint_y: None
             size_hint: 1, None
             height: '85sp'
-			
-	        Label:
-	        	text:'ETSII'
-	        	font_size: '25sp'
-				size_hint: None, 1
-				size_hint_x:None
-				width:root.width*0.75
-			AsyncImage:
-
-				source: 'http://www.informatica.us.es/docs/25aniversario/logo25aniv.jpg'
+			Image:
+				source: 'icon.png'
 				pos:self.pos	
 		FloatLayout:
 			Label:
@@ -40,8 +34,8 @@
 				text:''
 				size_hint:.6,.1
 				pos_hint: {'x':.2, 'y':.6}
-				#background_color:.5, .7, .7, 1
-				background_disabled_active: 'True'
+				#text_color:1,1,1,1
+				background_color:1, 1, 1, .4
 				multiline: False
 
 			Button:
@@ -78,7 +72,8 @@
                 on_press: root.back()
             
             Label:
-                text: "Usuarios"
+                text: 'Usuarios'
+                font_size: '25sp'
             Button:
             	id: play_button
                 size_hint: None, 1
@@ -99,8 +94,14 @@
 
 <PlayViewerScreen>:
 	GridLayout:
-		rows: 3
+		rows: 2
 		spacing: 5
+		canvas:
+			Color:
+				rgba: .9, .9, .9,1
+			Rectangle:
+                size: self.size
+				#pos: self.pos
 
 		BoxLayout:
 			id: layout_barra_titulo
@@ -124,7 +125,7 @@
                 width: root.width*0.20
                 text: 'Salir'
                 background_color: .4, .6, .6, .4
-                on_press: root.salir_viewer()
+                #on_press: root.salir_viewer()
 
 			BoxLayout:
 				id: layout_textInput
@@ -134,8 +135,6 @@
 					id: txt_word
 					font_size: root.height*0.05
 					text:''
-					#size_hint:.6,.1
-					#pos_hint: {'x':.2, 'y':.6}
 					multiline: False
 			Button:
             	id: comprobar_button
@@ -144,41 +143,47 @@
                 text: 'Comprobar'
                 background_color: .4, .6, .6, .4
                 on_press: root.comprobar_palabra()
-		# Temporizador
-		BoxLayout:
-			size_hint: 1, None
-            height: '55sp'
-			canvas:
-				Color:
-					rgba: 1, 1, 1,0.8
-				Ellipse:
-	                size: self.height,self.height
-					pos: self.pos
-				
-				Color:
-					rgba: 0, 0, 1, 0.7
-				Ellipse:
-	                size: self.height,self.height
-	                pos: self.pos
-					angle_start: 0
-					angle_end: root.uxSeconds * 12
-
-#				Color:
-#					rgba: 0, 0, 0, 0.9
-#				Ellipse:
-#	                size: self.height*.6,self.height*.6
-#					pos:self.x*1.05,self.y*1.025
 
 		BoxLayout:
+			orientation: 'vertical'
+			# Temporizador
+			BoxLayout:
+				size_hint: 1, None
+	            height: '55sp'
+	            width: '55sp'
+				canvas:
+					Color:
+						rgba: .8, .8, .8,1
+					Ellipse:
+		                size: self.height,self.height
+						pos: self.pos
+					
+					Color:
+						rgba: .3, .56, .9, 1
+					Ellipse:
+		                size: self.height,self.height
+		                pos: self.pos
+						angle_start: 0
+						angle_end: root.uxSeconds * 12
+
+					#Color:
+					#	rgba: 1, 1, 1, 1
+					#Ellipse:
+		            #    size: self.height*.85,self.height*.85
+					#	pos:self.width/2, self.height/2
 			Label:
 				id: lab_resultado
 				text: ''
+			
 			Widget:
+				canvas:
+					Color:
+						rgba: .3, .3, .3, 1
 			BoxLayout:
 				id:layout_visualizador
 				canvas:
 					Color:
-						rgb: 1, 1, 1
+						rgba: .3, .3, .3, 1
 					#Rectangle:
 					#	source: 'data/images/background.jpg'
 					#	size: self.size
@@ -225,7 +230,8 @@
 	            height: '55sp'
 				Label:
 					text: 'Pantalla de dibujo'
-		                
+					font_size: '20sp'
+
 		    Button:
             	id: clear_button
                 size_hint: None, 1
@@ -256,8 +262,9 @@
 						angle_start: 0
 						angle_end: root.uxSeconds * 12
 
-					#Color:
-					#	rgba: 1, 1, 1, 1
+					# No borrar el Color
+					Color:
+						rgba: .3, .3, .3, 1
 					#Ellipse:
 		            #    size: self.height*.85,self.height*.85
 					#	pos:self.width/2, self.height/2
