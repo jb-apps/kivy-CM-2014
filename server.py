@@ -114,7 +114,7 @@ while 1:
 
 		except Exception, e:
 			dic = {}
-			dic["message"]=str(e)
+			dic["message"]=str(sys.exc_info()[1])
 			data = make_response("ERROR", dic)
 			conn.send(data) # echo 
 			conn.close()
