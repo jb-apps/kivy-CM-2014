@@ -18,7 +18,7 @@ from kivy.uix.popup import Popup
 from kivy.uix.button import Button
 from kivy.uix.listview import ListView
 from kivy.uix.listview import ListItemButton
-from kivy.uix.screenmanager import ScreenManager, Screen
+from kivy.uix.screenmanager import ScreenManager, Screen, SlideTransition
 from kivy.adapters.listadapter import ListAdapter
 from kivy.properties import ObjectProperty, NumericProperty, StringProperty
 from kivy.clock import Clock
@@ -87,6 +87,7 @@ class Utilities():
 
 		btnCerrar.bind(on_press=popup.dismiss)
 		def go_dest(obj):
+			sm.transition = SlideTransition(direction='right')
 			orig.manager.current = dest
 			
 		btnAceptar.bind(on_press=go_dest, on_release=popup.dismiss)
@@ -138,22 +139,22 @@ class UserListScreen(Screen):
 		print "console >> Waiting for user..."
 
 		global id_user
-		js_response = json.loads(utilities.send_message('{"action":"GET_ONLINE_USER","data":{"id_user":"'+str(id_user)+'"}}'))
+		self.js_response = json.loads(utilities.send_message('{"action":"GET_ONLINE_USER","data":{"id_user":"'+str(id_user)+'"}}'))
 		
-		list_item_args_converter = \
-			lambda row_index, obj: {'text': '[b]'+obj+'[/b] ---- Ptos: ' + str(js_response['data'][obj]),
+		self.list_item_args_converter = \
+			lambda row_index, obj: {'text': '[b]'+obj+'[/b] ---- Ptos: ' + str(self.js_response['data'][obj]),
                                     'size_hint_y': None,
                                     'selected_color': [.5,.5,.5,1],
                                     'deselected_color': [.3,.3,.3,1],
                                     'markup': True}
-		print list_item_args_converter
+		print self.list_item_args_converter
 		
 		print 'height: ' + str(self.height)
-		print 'console >> Connected users', js_response['data']
+		print 'console >> Connected users', self.js_response['data']
 		
 		self.list_adapter = \
-			ListAdapter(data=js_response['data'],
-						args_converter=list_item_args_converter,
+			ListAdapter(data=self.js_response['data'],
+						args_converter=self.list_item_args_converter,
 						selection_mode='single',
 						propagate_selection_to_data=False,
 						allow_empty_selection=False,
@@ -177,6 +178,7 @@ class UserListScreen(Screen):
 				if len(data) != 0:
 					print "console >> Data received from", addr
 					if not sm.has_screen('playViewer'): sm.add_widget(PlayViewerScreen(name='playViewer'))
+					sm.transition = SlideTransition(direction='left')
 					self.manager.current = 'playViewer'
 				else:
 					print "console >> No data received. Stopping server"
@@ -192,9 +194,11 @@ class UserListScreen(Screen):
 		global drawer
 		drawer = True
 		if not sm.has_screen('playDrawer'): sm.add_widget(PlayDrawerScreen(name='playDrawer'))
+		sm.transition = SlideTransition(direction='left')
 		self.manager.current = 'playDrawer'
 
 	def back(self):
+		sm.transition = SlideTransition(direction='down')
 		self.manager.current = 'login'
 
 	def stop_server(self):
@@ -228,8 +232,8 @@ class LoginScreen(Screen):
 					global id_user
 					id_user = js_response["data"]["id_user"]
 					print 'console >> Usuario con id',id_user,'conectado'
-					
 					if not sm.has_screen('userList'): sm.add_widget(UserListScreen(name='userList'))
+					sm.transition = SlideTransition(direction='up')
 					self.manager.current = 'userList'
 				else:
 					# Mostrar popup
@@ -290,6 +294,7 @@ class PlayViewerScreen(Screen):
 						utilities.popup('Fin de juego', 'Se ha acabado el juego')
 						print "console >> End of game"
 						self.flag = False		# detenemos el temporizador
+						sm.transition = SlideTransition(direction='right')
 						self.manager.current = 'userList'
 						
 						#break
@@ -475,10 +480,12 @@ class PlayDrawerScreen(Screen):
 			self.uxSeconds += 1
 		elif self.uxSeconds > 29:
 			Utilities().popup('Tiempo agotado','Se ha agotado el tiempo')
+			sm.transition = SlideTransition(direction='right')
 			self.manager.current = 'userList'
 			print "console >> Stopping time", self.uxSeconds
 			return False
 		else:
+			sm.transition = SlideTransition(direction='right')
 			self.manager.current = 'userList'
 			print "console >> Stopping time", self.uxSeconds
 			return False
@@ -505,6 +512,7 @@ class TouchtracerApp(App):
 
 	def on_stop(self):
 		# Paramos el servidor si no somos dibujantes
+		print 'console >>', len(sm.screens), 'screens to close'
 		global drawer
 		if not drawer and sm.has_screen('playViewer'): sm.get_screen('playViewer').stop_server()
 		if sm.has_screen('userList'): sm.get_screen('userList').stop_server()
