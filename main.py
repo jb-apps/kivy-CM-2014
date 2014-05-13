@@ -404,28 +404,24 @@ class PlayViewerScreen(Screen):
 
 	def on_touch_up(self, touch):
 		w, h = Window.system_size
-		layoutInput = self.ids.layout_textInput
-		textInputWord = self.ids.txt_word
-		h_layout = layoutInput.height
+		h_layout = self.ids.layout_textInput.height
 
 		#TextInput pressed
 		# comprobamos si hemos presionado el TextInput
 		if touch.y > (h-h_layout) and touch.x>w*0.20 and touch.x<w*0.7:
-			#Borramos el antiguo text input
-			layoutInput.clear_widgets()
-
-			#Creamos un nuevo textInput y activamos el teclado
-			newInput = TextInput(text='',multiline=False,id='txt_word',focus='True', font_size=self.height*0.05,allow_copy='True')
-			# añadimos el textInput
-			layoutInput.add_widget(newInput)
+			self.ids.txt_word.focus = True
 
 			print touch.pos, h_layout
 		# salir pressed
 		elif (touch.y > h-h_layout) and touch.x < (w*0.20):
+			self.ids.txt_word.focus = False
 			self.salir()
 		# Comprobar palabra pressed
 		elif (touch.y > h-h_layout) and touch.x > (w*0.70):
+			self.ids.txt_word.focus = False
 			self.comprobar_palabra()
+		elif (touch.y < h-h_layout):
+			self.ids.txt_word.focus = False
 	
 	def salir(self):
 		Utilities().popup('Funcion no disponible', 'En esta version del juego, solo el Drawer puede cerrar la conexion con el Viewer.')
