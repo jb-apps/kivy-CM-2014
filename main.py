@@ -39,7 +39,7 @@ drawer = False			# inicializamos el usuario como NO dibujador
 ip_opponent = '127.0.0.1'
 port_opponent = 5006	# puerto oponente necesario en UserListScreen
 port_own = 5005			# puerto propio necesario en UserListScreen
-word = 'casa'			# palabra a adivinar
+word = ''			# palabra a adivinar
 
 """
 	Utilities: Clase de utilidades para las demas clases
@@ -172,6 +172,19 @@ class UserListScreen(Screen):
 		list_view = ListView(adapter=self.list_adapter)
 		layout = self.ids.lst_user
 		layout.add_widget(list_view)
+
+	def on_pre_enter(self):
+		self.get_word()
+
+	"""
+		Metodos auxiliares
+	"""
+
+	def get_word(self):
+		req = json.loads(Utilities().send_message('{"action" : "GET_WORD", "data" : { "id_user" : "'+str(id_user)+'"}}'))
+		global word
+		word = req['data']['word']
+		print 'console >> Word downloaded,', word
 
 	def send_user(self):
 		sock = socket.socket(socket.AF_INET,	# Internet
