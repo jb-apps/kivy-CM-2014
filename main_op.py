@@ -38,6 +38,7 @@ id_user = -1 			# lo inicilizamos a un indice no valido en la BD
 drawer = False			# inicializamos el usuario como NO dibujador
 ip_opponent = '127.0.0.1'
 port_opponent = 5005	# puerto oponente necesario en UserListScreen
+ip_own = '127.0.0.1'
 port_own = 5006			# puerto propio necesario en UserListScreen
 word = ''			# palabra a adivinar
 
@@ -119,12 +120,12 @@ class Utilities():
 
 	def stop_server(self, sock, port):
 		try:
-			sock.sendto('', ('127.0.0.1', port))
+			sock.sendto('', (ip_own, port))
 			sock.close()
 			# Es necesario despues de cerrar el socket intentar realizar un envio
 			print "console >> Closing socket with Utilities", port
 		
-			sock.sendto('', ('127.0.0.1', port))
+			sock.sendto('', (ip_own, port))
 		except:
 			print "console >> Server stopped with Utilities"
 
@@ -137,17 +138,23 @@ class UserListScreen(Screen):
 
 	def __init__(self, **kwargs):
 		super(UserListScreen, self).__init__(**kwargs)
-		w, h = Window.system_size
 		
-		utilities = Utilities()
-
 		thread = threading.Thread(target=self.receive_user)
 		thread.start()
 		print "console >> Waiting for user..."
+	
+	def on_pre_enter(self):
+		self.load_list()
 
+	def on_pre_leave(self):
+		self.ids.lst_user.remove_widget(self.list_view)
+
+	def load_list(self):
+		w, h = Window.system_size
+		self.get_word()
 		global id_user
-		self.js_response = json.loads(utilities.send_message('{"action":"GET_ONLINE_USER","data":{"id_user":"'+str(id_user)+'"}}'))
-		
+		self.js_response = json.loads(Utilities().send_message('{"action":"GET_ONLINE_USER","data":{"id_user":"'+str(id_user)+'"}}'))
+
 		self.list_item_args_converter = \
 			lambda row_index, obj: {'text': '[b]'+obj+'[/b] ---- Ptos: ' + str(self.js_response['data'][obj]),
                                     'size_hint_y': None,
@@ -169,12 +176,8 @@ class UserListScreen(Screen):
 						allow_empty_selection=False,
 						cls=ListItemButton)
 		
-		list_view = ListView(adapter=self.list_adapter)
-		layout = self.ids.lst_user
-		layout.add_widget(list_view)
-
-	def on_pre_enter(self):
-		self.get_word()
+		self.list_view = ListView(adapter=self.list_adapter)	
+		self.ids.lst_user.add_widget(self.list_view)
 
 	"""
 		Metodos auxiliares
@@ -220,17 +223,20 @@ class UserListScreen(Screen):
 		self.manager.current = 'playDrawer'
 
 	def back(self):
+		global id_user
+		json.loads(Utilities().send_message('{"action":"PUT_USER_OFFLINE","data":{"id_user":"'+str(id_user)+'"}}'))
+		
 		sm.transition = SlideTransition(direction='down')
 		self.manager.current = 'login'
 
 	def stop_server(self):
 		try:
-			self.sock_server.sendto('', ('127.0.0.1', port_own))
+			self.sock_server.sendto('', (ip_own, port_own))
 			self.sock_server.close()
 			# Es necesario despues de cerrar el socket intentar realizar un envio
 			print "console >> Closing socket", port_own
 		
-			self.sock_server.sendto('', ('127.0.0.1', port_own))
+			self.sock_server.sendto('', (ip_own, port_own))
 		except:
 			print "console >> UserListScreen server stopped"
 
@@ -268,7 +274,6 @@ class LoginScreen(Screen):
 			print 'console >> No username written'
 			utilities.popup('Error', 'Escriba su nombre de usuario')
 			
-
 class PlayViewerScreen(Screen):
 	flag = True
 	uxSeconds = NumericProperty(0)
@@ -338,12 +343,12 @@ class PlayViewerScreen(Screen):
 	# Parar el servidor de escucha
 	def stop_server(self):
 		try:
-			self.sock_server.sendto('', ('127.0.0.1', port_own+10))
+			self.sock_server.sendto('', (ip_own, port_own+10))
 			self.sock_server.close()
 			# Es necesario despues de cerrar el socket intentar realizar un envio
 			print "console >> Closing socket", port_own+10
 		
-			self.sock_server.sendto('', ('127.0.0.1', port_own+10))
+			self.sock_server.sendto('', (ip_own, port_own+10))
 		except:
 			print "console >> Server stopped"
 
@@ -387,20 +392,23 @@ class PlayViewerScreen(Screen):
 			pass
 		elif t_word == word:
 			self.ids.lab_resultado.text = 'Correcto'
-			utilities = Utilities()
-			utilities.popup('Enhorabuena','Has ganado el juego')
+			self.score_me()
+			Utilities().popup('Enhorabuena','Has ganado el juego')
 
 			time.sleep(1)
-			self.on_leave()
-			#self.score_me
+			self.send_points(ip_opponent, port_opponent+10, 'win')
+			sm.transition = SlideTransition(direction='right')
+			self.manager.current = 'userList'
 		else:
 			self.ids.lab_resultado.text = 'Incorrecto'
 
-			time.sleep(1)
-			self.on_leave()
-
 	def score_me(self):
-		pass
+		ok = False
+		while not ok:
+			resp = json.loads(Utilities().send_message('{"action":"PUT_POINT","data":{"id_user":"'+str(id_user)+'", "id_connection":"1", "punctuation": "25"}}'))
+			if resp['status'] == "OK":
+				print 'console >> User punctuated'
+				ok = True
 
 	def on_touch_up(self, touch):
 		w, h = Window.system_size
@@ -424,7 +432,10 @@ class PlayViewerScreen(Screen):
 			self.ids.txt_word.focus = False
 	
 	def salir(self):
-		Utilities().popup('Funcion no disponible', 'En esta version del juego, solo el Drawer puede cerrar la conexion con el Viewer.')
+		self.send_points(ip_opponent, port_opponent+10, 'exit')
+		sm.transition = SlideTransition(direction='right')
+		self.manager.current = 'userList'
+		#Utilities().popup('Funcion no disponible', 'En esta version del juego, solo el Drawer puede cerrar la conexion con el Viewer.')
 
 	def borrar_pantalla(self):
 		self.ids.layout_visualizador.canvas.clear()
@@ -432,9 +443,13 @@ class PlayViewerScreen(Screen):
 class PlayDrawerScreen(Screen):
 	flag = True
 	uxSeconds = NumericProperty(0)
+	sock_server = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
 	#uxSecondsStr = StringProperty('')
 	def __init__(self, **kwargs):
 		super(PlayDrawerScreen, self).__init__(**kwargs)
+
+		thread = threading.Thread(target=self.receive_user_match)
+		thread.start()
 
 		lab = Label(text=word)
 		self.add_widget(lab)
@@ -511,6 +526,34 @@ class PlayDrawerScreen(Screen):
 			return False
 		#self.uxSecondsStr = str(self.uxSeconds)
 
+	# Recibe si el usuario ha ganado o no
+	def receive_user_match(self):
+		print "console >> Running server... port:", port_own+10
+		#time.sleep(5)
+		self.sock_server.bind(('', port_own+10))
+		while 1:
+			try:
+				data, addr = self.sock_server.recvfrom(10240)
+				if len(data) != 0:
+					if data == 'win':
+						Utilities().popup('Fin de juego', 'Se ha acabado el juego')
+						print "console >> End of game - The Viewer won the match"
+						self.flag = False		# detenemos el temporizador
+						sm.transition = SlideTransition(direction='right')
+						self.manager.current = 'userList'
+					elif data == 'exit':
+						Utilities().popup('Fin de juego', 'El oponente ha cerrado la partida')
+						print "console >> End of game - The Viewer closed the match"
+						self.flag = False		# detenemos el temporizador
+						sm.transition = SlideTransition(direction='right')
+						self.manager.current = 'userList'
+				else:
+					print "console >> Stopping PlayViewerScreen server"
+					break
+			except:
+				print "console >> ERROR receiving data"
+				break
+
 	def salir(self):
 		utility = Utilities()
 		utility.popupCancelarAceptar('Warning', '    ¿seguro que desea salir? \n se contará como una perdida', self, 'userList')
@@ -521,6 +564,18 @@ class PlayDrawerScreen(Screen):
 		print "console >> Erasing drawing"
 		self.send_points(ip_opponent, port_opponent+10, 'erase')
 		self.ids.layout_dibujo.canvas.clear()
+
+	# Parar el servidor de escucha. Solo debe ser llamado cuando se detenga la App
+	def stop_server(self):
+		try:
+			self.sock_server.sendto('', (ip_own, port_own+10))
+			self.sock_server.close()
+			# Es necesario despues de cerrar el socket intentar realizar un envio
+			print "console >> Closing socket", port_own+10
+		
+			self.sock_server.sendto('', (ip_own, port_own+10))
+		except:
+			print "console >> Server stopped"
 
 class TouchtracerApp(App):
 
@@ -534,9 +589,9 @@ class TouchtracerApp(App):
 		# Paramos el servidor si no somos dibujantes
 		print 'console >>', len(sm.screens), 'screens to close'
 		global drawer
-		if not drawer and sm.has_screen('playViewer'): sm.get_screen('playViewer').stop_server()
-		if sm.has_screen('userList'):
-			sm.get_screen('userList').stop_server()
+		if sm.has_screen('playViewer'): sm.get_screen('playViewer').stop_server()
+		if sm.has_screen('userList'): sm.get_screen('userList').stop_server()
+		if sm.has_screen('playDrawer'): sm.get_screen('playDrawer').stop_server()
 
 if __name__ == '__main__':
 	sm = ScreenManager()
