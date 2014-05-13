@@ -176,7 +176,7 @@ class UserListScreen(Screen):
 				data, addr = self.sock_server.recvfrom(1024)
 				if len(data) != 0:
 					print "console >> Data received from", addr
-					sm.add_widget(PlayViewerScreen(name='playViewer'))
+					if not sm.has_screen('playViewer'): sm.add_widget(PlayViewerScreen(name='playViewer'))
 					self.manager.current = 'playViewer'
 				else:
 					print "console >> No data received. Stopping server"
@@ -191,7 +191,7 @@ class UserListScreen(Screen):
 		self.send_user() # enviar mensaje al oponennte para que juegue
 		global drawer
 		drawer = True
-		sm.add_widget(PlayDrawerScreen(name='playDrawer'))
+		if not sm.has_screen('playDrawer'): sm.add_widget(PlayDrawerScreen(name='playDrawer'))
 		self.manager.current = 'playDrawer'
 
 	def back(self):
@@ -229,7 +229,7 @@ class LoginScreen(Screen):
 					id_user = js_response["data"]["id_user"]
 					print 'console >> Usuario con id',id_user,'conectado'
 					
-					sm.add_widget(UserListScreen(name='userList'))
+					if not sm.has_screen('userList'): sm.add_widget(UserListScreen(name='userList'))
 					self.manager.current = 'userList'
 				else:
 					# Mostrar popup
