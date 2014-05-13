@@ -405,8 +405,8 @@ class PlayViewerScreen(Screen):
 	def on_touch_up(self, touch):
 		w, h = Window.system_size
 		h_layout = self.ids.layout_textInput.height
-
-		#TextInput pressed
+		
+		#TextInput pressed dis
 		# comprobamos si hemos presionado el TextInput
 		if touch.y > (h-h_layout) and touch.x>w*0.20 and touch.x<w*0.7:
 			self.ids.txt_word.focus = True
