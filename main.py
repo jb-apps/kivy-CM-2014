@@ -36,7 +36,7 @@ Builder.load_file('touchtracer.kv')
 sm = ScreenManager()
 id_user = -1 			# lo inicilizamos a un indice no valido en la BD
 drawer = False			# inicializamos el usuario como NO dibujador
-ip_opponent = '127.0.0.1'
+ip_opponent = '10.100.15.98'
 port_opponent = 5006	# puerto oponente necesario en UserListScreen
 ip_own = '127.0.0.1'
 port_own = 5005			# puerto propio necesario en UserListScreen
@@ -192,6 +192,7 @@ class UserListScreen(Screen):
 	def send_user(self):
 		sock = socket.socket(socket.AF_INET,	# Internet
 				socket.SOCK_DGRAM)				# UDP
+		#sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
 		sock.sendto('sending user', (ip_opponent, port_opponent))
 
 	def receive_user(self):
@@ -356,6 +357,7 @@ class PlayViewerScreen(Screen):
 	def send_points(self, ip, port, data):
 		sock = socket.socket(socket.AF_INET, # Internet
 				socket.SOCK_DGRAM) # UDP
+		#sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
 		sock.sendto(data, (ip_opponent, port_opponent))
 
 	# Arrancar servidor
@@ -506,9 +508,13 @@ class PlayDrawerScreen(Screen):
 	'''
 	# Envio de puntos al servidor
 	def send_points(self, ip, port, data):
-		sock = socket.socket(socket.AF_INET,	# Internet
-				socket.SOCK_DGRAM)				# UDP
-		sock.sendto(data, (ip, port_opponent+10))
+		try:
+			sock = socket.socket(socket.AF_INET,	# Internet
+					socket.SOCK_DGRAM)				# UDP
+			#sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+			sock.sendto(data, (ip, port_opponent+10))
+		except:
+			print "console >> ERROR sending points. Maybe the line was too long."
 	
 	def update_timer(self, second):
 		if self.uxSeconds <= 29 and self.flag:
